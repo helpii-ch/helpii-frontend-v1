@@ -1,0 +1,35 @@
+{
+  "navbar": {
+    "yourMissions": "Deine Missionen",
+    "profile": "Profil",
+    "notifications": "Benachrichtigungen",
+    "logout": "Abmelden",
+    "language": "Sprache"
+  },
+  "home": {
+    "overview": "Übersicht",
+    "welcomeMessage": "Willkommen bei Helpii! Deine Plattform für die Verbindung von Helfern und Studenten.",
+    "tutorMessage": "Durchsuche verfügbare Missionen und verbinde dich mit Studenten, die deine Expertise benötigen.",
+    "studentMessage": "Erstelle Missionen und finde den perfekten Tutor, der dir zum Erfolg verhilft."
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "subtitle": "Bleibe über deine neuesten Aktivitäten informiert.",
+    "noMore": "Keine weiteren Benachrichtigungen vorhanden.",
+    "tutor": {
+      "missionAccepted": "Mission angenommen!",
+      "acceptedMessage": "Alex Johnson hat dein Hilfsangebot für Mathematik angenommen. Sie werden sich in Kürze bei dir melden."
+    },
+    "student": {
+      "newMatch": "Neuer Tutor-Match!",
+      "matchMessage": "John Doe möchte bei deiner Mathematik-Mission helfen. Überprüfe sein Profil und akzeptiere oder lehne sein Angebot ab."
+    }
+  },
+  "footer": {
+    "tagline": "Verbindet Helfer und Studenten seit 2023",
+    "aboutUs": "Über uns",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "termsOfService": "Nutzungsbedingungen",
+    "allRightsReserved": "Alle Rechte vorbehalten."
+  }
+}

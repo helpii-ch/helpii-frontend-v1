@@ -1,0 +1,35 @@
+{
+  "navbar": {
+    "yourMissions": "Your Missions",
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "logout": "Logout",
+    "language": "Language"
+  },
+  "home": {
+    "overview": "Overview",
+    "welcomeMessage": "Welcome to Helpii! Your one-stop platform for connecting helpers and students.",
+    "tutorMessage": "Browse available missions and connect with students who need your expertise.",
+    "studentMessage": "Create missions and find the perfect tutor to help you succeed."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Stay updated with your latest activity.",
+    "noMore": "No more notifications to display.",
+    "tutor": {
+      "missionAccepted": "Mission Accepted!",
+      "acceptedMessage": "Alex Johnson has accepted your help offer for Mathematics. They will contact you shortly."
+    },
+    "student": {
+      "newMatch": "New Tutor Match!",
+      "matchMessage": "John Doe wants to help with your Mathematics mission. Review their profile and accept or reject their offer."
+    }
+  },
+  "footer": {
+    "tagline": "Connecting helpers and students since 2023",
+    "aboutUs": "About Us",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "allRightsReserved": "All rights reserved."
+  }
+}
