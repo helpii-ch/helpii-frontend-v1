@@ -22,6 +22,7 @@ import {
   MapPin,
   Globe,
   Phone,
+  Shield,
 } from "lucide-react";
 import {
   Tooltip,
@@ -782,6 +783,24 @@ const TutorProfile = ({ activeRole, onTabChange }: TutorProfileProps) => {
                     )}
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Privacy Information */}
+            <div className="mt-6 p-3 bg-gray-50 border border-gray-200 rounded-md">
+              <div className="flex items-start gap-2">
+                <Shield className="h-4 w-4 text-gray-500 mt-0.5" />
+                <div>
+                  <h3 className="font-medium text-gray-700 text-sm mb-1">
+                    Privacy Information
+                  </h3>
+                  <p className="text-xs text-gray-600">
+                    Your contact information (phone number) will only be shared
+                    with students after they have completed the payment for the
+                    help mission. Your birthday will not be shared with students
+                    (only your age).
+                  </p>
+                </div>
               </div>
             </div>
           </div>

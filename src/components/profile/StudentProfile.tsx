@@ -238,7 +238,7 @@ const StudentProfile = ({ activeRole, onTabChange }: StudentProfileProps) => {
               {renderRatingBar(profile.rating.friendliness, "Friendliness")}
               {renderRatingBar(profile.rating.fairness, "Fairness")}
               <div className="flex items-center justify-center gap-1 mt-3">
-                <Star className="h-5 w-5 fill-yellow-400 text-amber-500" />
+                <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                 <span className="font-bold text-lg">
                   {(
                     (profile.rating.friendliness + profile.rating.fairness) /
@@ -474,9 +474,10 @@ const StudentProfile = ({ activeRole, onTabChange }: StudentProfileProps) => {
                 Privacy Information
               </h4>
               <p className="text-xs text-blue-700">
-                Your contact information will only be shared with tutors after
-                you accept their help offer and complete payment. Your birthdate
-                is used for age verification and will not be shared with tutors.
+                Your contact information will not be shared with tutors. Your
+                phone number is used to pay you via TWINT . Your birthdate is
+                used for age verification and will not be shared with tutors
+                (only your age will be shared with tutors).
               </p>
             </div>
           </div>

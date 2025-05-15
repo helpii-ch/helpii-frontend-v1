@@ -708,7 +708,7 @@ const StudentDashboard = ({
                 </div>
               )}
             </TabsTrigger>
-            <TabsTrigger value="applied">Applied</TabsTrigger>
+
             <TabsTrigger value="pending">Pending</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
             <TabsTrigger value="calendar">Calendar</TabsTrigger>

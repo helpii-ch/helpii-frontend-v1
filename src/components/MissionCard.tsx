@@ -132,7 +132,7 @@ const MissionCard = ({
                 ? "text-green-600 border-green-600"
                 : isApplied
                   ? "bg-blue-500 hover:bg-blue-500 text-white"
-                  : "bg-[#5E17EB] hover:bg-[#5E17EB] text-white"
+                  : "bg-[#5E17EB] hover:bg-[#5E17EB]/90 text-white"
             }
           >
             {isMatched ? "Matched" : isApplied ? "Applied" : "Help"}

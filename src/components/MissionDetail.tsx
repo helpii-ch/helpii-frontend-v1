@@ -156,7 +156,12 @@ const MissionDetail = ({
             <Button variant="outline" onClick={onCantHelp}>
               Can't Help
             </Button>
-            <Button onClick={onHelp}>Help</Button>
+            <Button
+              onClick={onHelp}
+              className="bg-[#5E17EB] hover:bg-[#5E17EB]/90 text-white"
+            >
+              Help
+            </Button>
           </DialogFooter>
         )}
       </DialogContent>
