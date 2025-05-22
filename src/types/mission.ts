@@ -9,9 +9,9 @@ export interface Mission {
   imageUrl?: string;
   tags: string[];
   isMatched?: boolean;
-  neederName: string;
-  neederImage: string;
-  neederRating: number;
+  studentName: string;
+  studentImage: string;
+  studentRating: number;
   price: string;
   date: Date;
   time: string;
@@ -22,9 +22,9 @@ export interface Mission {
     | "completed"
     | "new_match"
     | "applied"
-    | "needer_completed"
-    | "helper_completed";
-  needer: {
+    | "student_completed"
+    | "tutor_completed";
+  student: {
     name: string;
     image: string;
     rating: number;

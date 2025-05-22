@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, MapPin, Clock, Calendar, Globe, User, X } from "lucide-react";
+import { Star, MapPin, Clock, Calendar, Globe, User } from "lucide-react";
 
 interface MissionDetailProps {
   isOpen: boolean;
@@ -21,15 +21,7 @@ interface MissionDetailProps {
     time: string;
     location: string;
     price: string;
-    status?:
-      | "pending"
-      | "matched"
-      | "completed"
-      | "new_match"
-      | "applied"
-      | "needer_completed"
-      | "helper_completed";
-    needer: {
+    student: {
       name: string;
       image: string;
       rating: number;
@@ -38,10 +30,9 @@ interface MissionDetailProps {
       location: string;
     };
   };
-  userRole: "helper" | "needer";
+  userRole: "tutor" | "student";
   onHelp?: () => void;
   onCantHelp?: () => void;
-  onComplete?: (missionId: string) => void;
 }
 
 const MissionDetail = ({
@@ -51,7 +42,7 @@ const MissionDetail = ({
   userRole,
   onHelp = () => {},
   onCantHelp = () => {},
-  onComplete = () => {},
+  onComplete,
 }: MissionDetailProps) => {
   if (!mission) return null;
 
@@ -64,37 +55,39 @@ const MissionDetail = ({
           </DialogTitle>
         </DialogHeader>
 
-        {userRole === "helper" ? (
+        {userRole === "tutor" ? (
           <div className="border-b pb-4">
-            <h3 className="font-semibold mb-3">Needer Profile</h3>
+            <h3 className="font-semibold mb-3">Student Profile</h3>
             <div className="flex items-start gap-4">
               <div className="h-16 w-16 rounded-full overflow-hidden">
                 <img
-                  src={mission.needer.image}
-                  alt={mission.needer.name}
+                  src={mission.student.image}
+                  alt={mission.student.name}
                   className="h-full w-full object-cover"
                 />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-lg">{mission.needer.name}</h4>
+                  <h4 className="font-medium text-lg">
+                    {mission.student.name}
+                  </h4>
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span>{mission.needer.rating}</span>
+                    <span>{mission.student.rating}</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   <div className="flex items-center gap-1 text-sm text-gray-600">
                     <Calendar className="h-4 w-4" />
-                    <span>{mission.needer.age} years old</span>
+                    <span>{mission.student.age} years old</span>
                   </div>
                   <div className="flex items-center gap-1 text-sm text-gray-600">
                     <MapPin className="h-4 w-4" />
-                    <span>{mission.needer.location}</span>
+                    <span>{mission.student.location}</span>
                   </div>
                   <div className="flex items-center gap-1 text-sm text-gray-600 col-span-2">
                     <Globe className="h-4 w-4" />
-                    <span>{mission.needer.languages.join(", ")}</span>
+                    <span>{mission.student.languages.join(", ")}</span>
                   </div>
                 </div>
               </div>
@@ -102,18 +95,18 @@ const MissionDetail = ({
           </div>
         ) : (
           <div className="border-b pb-4">
-            <h3 className="font-semibold mb-3">Helper Information</h3>
+            <h3 className="font-semibold mb-3">Tutor Information</h3>
             <div className="flex items-start gap-4">
-              {/* Find matched helper for this mission */}
+              {/* Find matched tutor for this mission */}
               <div className="h-16 w-16 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
                 <User className="h-8 w-8 text-gray-400" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-lg">Your Matched Helper</h4>
+                  <h4 className="font-medium text-lg">Your Matched Tutor</h4>
                 </div>
                 <p className="text-sm text-blue-600 mt-1">
-                  Contact your helper to confirm details before the session
+                  Contact your tutor to confirm details before the session
                 </p>
               </div>
             </div>
@@ -148,34 +141,22 @@ const MissionDetail = ({
                 <p className="font-medium">{mission.location}</p>
               </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                {userRole === "helper" ? (
-                  <Badge
-                    variant="outline"
-                    className="px-3 py-1 text-base font-bold text-green-600 border-green-600"
-                  >
-                    You earn: CHF{" "}
-                    {(parseFloat(mission.price) * 0.85).toFixed(2)}/hr
-                  </Badge>
-                ) : (
-                  <Badge
-                    variant="outline"
-                    className="px-3 py-1 text-base font-bold text-blue-600 border-blue-600"
-                  >
-                    You paid: CHF {mission.price}/hr
-                  </Badge>
-                )}
-              </div>
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="outline"
+                className="px-3 py-1 text-base font-bold"
+              >
+                {mission.price}
+              </Badge>
             </div>
           </div>
         </div>
 
-        {userRole === "helper" &&
+        {userRole === "tutor" &&
           mission?.status !== "matched" &&
           mission?.status !== "completed" &&
-          mission?.status !== "needer_completed" &&
-          mission?.status !== "helper_completed" && (
+          mission?.status !== "student_completed" &&
+          mission?.status !== "tutor_completed" && (
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={onCantHelp}>
                 Can't Help
@@ -190,42 +171,41 @@ const MissionDetail = ({
           )}
 
         {mission?.status === "matched" ||
-        mission?.status === "needer_completed" ||
-        mission?.status === "helper_completed" ? (
+        mission?.status === "student_completed" ||
+        mission?.status === "tutor_completed" ? (
           <div className="mt-6 border-t pt-4">
             <div className="flex flex-col gap-2">
-              {mission.status === "needer_completed" &&
-                userRole === "needer" && (
+              {mission.status === "student_completed" &&
+                userRole === "student" && (
                   <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-700">
                     You have marked this mission as complete. Waiting for the
-                    helper to confirm.
+                    tutor to confirm.
                   </div>
                 )}
-              {mission.status === "helper_completed" &&
-                userRole === "helper" && (
+              {mission.status === "tutor_completed" && userRole === "tutor" && (
+                <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-700">
+                  You have marked this mission as complete. Waiting for the
+                  student to confirm.
+                </div>
+              )}
+              {mission.status === "student_completed" &&
+                userRole === "tutor" && (
                   <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-700">
-                    You have marked this mission as complete. Waiting for the
-                    needer to confirm.
-                  </div>
-                )}
-              {mission.status === "needer_completed" &&
-                userRole === "helper" && (
-                  <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-700">
-                    The needer has marked this mission as complete. Please
+                    The student has marked this mission as complete. Please
                     confirm if the mission is complete.
                   </div>
                 )}
-              {mission.status === "helper_completed" &&
-                userRole === "needer" && (
+              {mission.status === "tutor_completed" &&
+                userRole === "student" && (
                   <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-700">
-                    The helper has marked this mission as complete. Please
+                    The tutor has marked this mission as complete. Please
                     confirm if the mission is complete.
                   </div>
                 )}
               {mission.status === "completed" && (
                 <div className="bg-green-50 p-3 rounded-md text-sm text-green-700">
                   This mission has been completed and payment has been released
-                  to the helper.
+                  to the tutor.
                 </div>
               )}
 
@@ -246,30 +226,28 @@ const MissionDetail = ({
                   <path d="M12 16v-4" />
                   <path d="M12 8h.01" />
                 </svg>
-                Both helper and needer need to confirm the mission is complete
+                Both tutor and student need to confirm the mission is complete
                 for payment to be released.
               </div>
 
               {mission.status !== "completed" && (
                 <DialogFooter className="gap-2">
-                  {(userRole === "needer" &&
-                    mission.status !== "needer_completed") ||
-                  (userRole === "helper" &&
-                    mission.status !== "helper_completed") ? (
+                  {(userRole === "student" &&
+                    mission.status !== "student_completed") ||
+                  (userRole === "tutor" &&
+                    mission.status !== "tutor_completed") ? (
                     <Button
-                      onClick={() => onComplete(mission.id)}
+                      onClick={() => onComplete && onComplete(mission.id)}
                       className="bg-green-600 hover:bg-green-700 text-white w-full"
                     >
-                      {userRole === "needer"
-                        ? "Tap to Confirm"
-                        : "Mark as Completed"}
+                      Mark as Completed
                     </Button>
                   ) : (
                     <Button
                       disabled
                       className="bg-gray-300 text-gray-600 w-full cursor-not-allowed"
                     >
-                      Waiting for {userRole === "needer" ? "helper" : "needer"}{" "}
+                      Waiting for {userRole === "student" ? "tutor" : "student"}{" "}
                       to confirm
                     </Button>
                   )}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -11,13 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -51,7 +44,6 @@ import {
   Search,
   Globe,
   Video,
-  ArrowLeft,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import MissionCard from "./MissionCard";
@@ -74,7 +66,7 @@ interface Mission {
   endTime?: string;
 }
 
-interface MatchedHelper {
+interface MatchedTutor {
   id: string;
   name: string;
   avatar: string;
@@ -83,9 +75,9 @@ interface MatchedHelper {
   contactInfo?: string;
 }
 
-interface NeederDashboardProps {
+interface StudentDashboardProps {
   missions?: Mission[];
-  matchedHelpers?: MatchedHelper[];
+  matchedTutors?: MatchedTutor[];
 }
 
 const StudentDashboard = ({
@@ -143,7 +135,7 @@ const StudentDashboard = ({
       hourly: true,
     },
   ],
-  matchedHelpers: defaultMatchedHelpers = [
+  matchedTutors: defaultMatchedTutors = [
     {
       id: "1",
       name: "John Doe",
@@ -169,11 +161,10 @@ const StudentDashboard = ({
       missionId: "3",
     },
   ],
-}: NeederDashboardProps) => {
-  // Create a state to manage matched helpers
-  const [matchedHelpers, setMatchedHelpers] = useState<MatchedHelper[]>(
-    defaultMatchedHelpers,
-  );
+}: StudentDashboardProps) => {
+  // Create a state to manage matched tutors
+  const [matchedTutors, setMatchedTutors] =
+    useState<MatchedTutor[]>(defaultMatchedTutors);
   const [activeTab, setActiveTab] = useState("missions");
   const [newMission, setNewMission] = useState<Partial<Mission>>({
     subject: "",
@@ -188,8 +179,6 @@ const StudentDashboard = ({
     startTime: "",
     endTime: "",
   });
-  const [showOtherSubject, setShowOtherSubject] = useState(false);
-  const [otherSubjectText, setOtherSubjectText] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isHourlyRate, setIsHourlyRate] = useState(true);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -201,27 +190,27 @@ const StudentDashboard = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [appliedMissions, setAppliedMissions] = useState<string[]>(["2"]);
   const [notificationCount, setNotificationCount] = useState(1);
-  const [pendingHelperOffers, setPendingHelperOffers] = useState<
+  const [pendingTutorOffers, setPendingTutorOffers] = useState<
     {
-      helperId: string;
+      tutorId: string;
       missionId: string;
-      helperName: string;
-      helperAvatar: string;
+      tutorName: string;
+      tutorAvatar: string;
     }[]
   >([]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedHelperOffer, setSelectedHelperOffer] = useState<{
-    helperId: string;
+  const [selectedTutorOffer, setSelectedTutorOffer] = useState<{
+    tutorId: string;
     missionId: string;
-    helperName: string;
-    helperAvatar: string;
+    tutorName: string;
+    tutorAvatar: string;
     contactInfo?: string;
   } | null>(null);
 
-  // State for helper profile modal
-  const [showHelperProfileModal, setShowHelperProfileModal] = useState(false);
-  const [selectedHelperProfile, setSelectedHelperProfile] = useState<any>(null);
-  const [acceptedHelpers, setAcceptedHelpers] = useState<string[]>([]);
+  // State for tutor profile modal
+  const [showTutorProfileModal, setShowTutorProfileModal] = useState(false);
+  const [selectedTutorProfile, setSelectedTutorProfile] = useState<any>(null);
+  const [acceptedTutors, setAcceptedTutors] = useState<string[]>([]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -229,25 +218,6 @@ const StudentDashboard = ({
     const { name, value } = e.target;
     setNewMission((prev) => ({ ...prev, [name]: value }));
     validateField(name, value);
-  };
-
-  const handleSubjectChange = (value: string) => {
-    if (value === "Other") {
-      setShowOtherSubject(true);
-      setNewMission((prev) => ({ ...prev, subject: "" }));
-    } else {
-      setShowOtherSubject(false);
-      setOtherSubjectText("");
-      setNewMission((prev) => ({ ...prev, subject: value }));
-      validateField("subject", value);
-    }
-  };
-
-  const handleOtherSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setOtherSubjectText(value);
-    setNewMission((prev) => ({ ...prev, subject: value }));
-    validateField("subject", value);
   };
 
   const validateField = (name: string, value: any) => {
@@ -438,7 +408,7 @@ const StudentDashboard = ({
       toast({
         title: "Mission Created",
         description:
-          "Your help mission has been posted! Helpers will see it shortly.",
+          "Your help mission has been posted! Tutors will see it shortly.",
         duration: 5000,
       });
 
@@ -458,8 +428,6 @@ const StudentDashboard = ({
       });
       setImagePreview(null);
       setFormErrors({});
-      setShowOtherSubject(false);
-      setOtherSubjectText("");
 
       // Switch to missions tab
       setActiveTab("missions");
@@ -486,66 +454,64 @@ const StudentDashboard = ({
     console.log("Edit mission:", mission);
   };
 
-  const handleAcceptHelper = (helperId: string, missionId: string) => {
-    setSelectedHelperOffer(
-      matchedHelpers.find((t) => t.id === helperId) || null,
-    );
+  const handleAcceptTutor = (tutorId: string, missionId: string) => {
+    setSelectedTutorOffer(matchedTutors.find((t) => t.id === tutorId) || null);
     setShowPaymentModal(true);
   };
 
-  const handleRejectHelper = (helperId: string, missionId: string) => {
+  const handleRejectTutor = (tutorId: string, missionId: string) => {
     // In a real app, you would update this in a database
-    console.log(`Rejected helper ${helperId} for mission ${missionId}`);
+    console.log(`Rejected tutor ${tutorId} for mission ${missionId}`);
     // Remove notification
     setNotificationCount((prev) => Math.max(0, prev - 1));
-    // Update UI by removing this helper from matchedHelpers
-    const updatedHelpers = matchedHelpers.filter((t) => t.id !== helperId);
+    // Update UI by removing this tutor from matchedTutors
+    const updatedTutors = matchedTutors.filter((t) => t.id !== tutorId);
     // This would normally update the database
-    setMatchedHelpers(updatedHelpers);
+    setMatchedTutors(updatedTutors);
   };
 
   const handlePayment = () => {
-    if (!selectedHelperOffer) return;
+    if (!selectedTutorOffer) return;
 
     // In a real app, this would process the payment
     // For demo purposes, we'll just close the modal and show the contact info
 
     // Update mission status
-    const missionId = selectedHelperOffer.missionId;
+    const missionId = selectedTutorOffer.missionId;
     const mission = missions.find((m) => m.id === missionId);
     if (mission) {
       mission.status = "matched";
     }
 
-    // Add contact info to helper
-    const updatedHelper = {
-      ...selectedHelperOffer,
+    // Add contact info to tutor
+    const updatedTutor = {
+      ...selectedTutorOffer,
       contactInfo: "+41 79 123 45 67",
     };
-    setSelectedHelperOffer(updatedHelper);
+    setSelectedTutorOffer(updatedTutor);
 
-    // Add to accepted helpers
-    setAcceptedHelpers((prev) => [...prev, selectedHelperOffer.helperId]);
+    // Add to accepted tutors
+    setAcceptedTutors((prev) => [...prev, selectedTutorOffer.tutorId]);
 
     // Remove from new matches notification
     setNotificationCount((prev) => Math.max(0, prev - 1));
 
-    // Find the helper in matchedHelpers and update with contact info
-    const updatedMatchedHelpers = matchedHelpers.map((helper) => {
-      if (helper.id === selectedHelperOffer.helperId) {
-        return { ...helper, contactInfo: "+41 79 123 45 67" };
+    // Find the tutor in matchedTutors and update with contact info
+    const updatedMatchedTutors = matchedTutors.map((tutor) => {
+      if (tutor.id === selectedTutorOffer.tutorId) {
+        return { ...tutor, contactInfo: "+41 79 123 45 67" };
       }
-      return helper;
+      return tutor;
     });
 
-    // Remove all other helpers for the same mission
-    const filteredHelpers = updatedMatchedHelpers.filter(
-      (helper) =>
-        helper.id === selectedHelperOffer.helperId ||
-        helper.missionId !== missionId,
+    // Remove all other tutors for the same mission
+    const filteredTutors = updatedMatchedTutors.filter(
+      (tutor) =>
+        tutor.id === selectedTutorOffer.tutorId ||
+        tutor.missionId !== missionId,
     );
 
-    setMatchedHelpers(filteredHelpers);
+    setMatchedTutors(filteredTutors);
   };
 
   // Helper function to calculate hours from time string (e.g., "3:00 PM - 5:30 PM" => 2.5)
@@ -559,17 +525,17 @@ const StudentDashboard = ({
     }
   };
 
-  // Calculate platform fee (12%) and helper's actual payment
+  // Calculate platform fee (12%) and tutor's actual payment
   const calculatePlatformFee = (
     totalPrice: number,
-  ): { platformFee: number; helperReceives: number } => {
+  ): { platformFee: number; tutorReceives: number } => {
     const platformFeePercentage = 0.12; // 12%
     const platformFee = totalPrice * platformFeePercentage;
-    const helperReceives = totalPrice - platformFee;
+    const tutorReceives = totalPrice - platformFee;
 
     return {
       platformFee,
-      helperReceives,
+      tutorReceives,
     };
   };
 
@@ -581,12 +547,12 @@ const StudentDashboard = ({
       const hours = calculateHoursFromTimeRange(mission.time);
       const hourlyRate = parseFloat(mission.price);
       const totalPrice = hourlyRate * hours;
-      const { helperReceives } = calculatePlatformFee(totalPrice);
+      const { tutorReceives } = calculatePlatformFee(totalPrice);
 
       return `CHF ${totalPrice.toFixed(0)} total (CHF ${hourlyRate}/hr × ${hours}h)`;
     } else {
       const totalPrice = parseFloat(mission.price);
-      const { helperReceives } = calculatePlatformFee(totalPrice);
+      const { tutorReceives } = calculatePlatformFee(totalPrice);
 
       return `CHF ${totalPrice.toFixed(0)}`;
     }
@@ -613,7 +579,7 @@ const StudentDashboard = ({
       hoursText = ` (${hourlyRate} × ${hours.toFixed(1)}h)`;
     }
 
-    const { helperReceives } = calculatePlatformFee(totalPrice);
+    const { tutorReceives } = calculatePlatformFee(totalPrice);
 
     return (
       <div className="mt-2 text-xs space-y-1 bg-blue-50 p-2 rounded-md">
@@ -622,7 +588,7 @@ const StudentDashboard = ({
           {hoursText}
         </div>
         <div className="font-medium">
-          Helper receives: CHF {helperReceives.toFixed(0)}
+          Tutor receives: CHF {tutorReceives.toFixed(0)}
         </div>
         <div className="text-gray-500 text-xs mt-1">
           💡 Fair pay = more likely matches.
@@ -652,19 +618,19 @@ const StudentDashboard = ({
     return true;
   });
 
-  const [completedMissions, setCompletedMissions] = useState<
-    Record<string, string>
-  >({});
-
-  // State for horizontal scroll indicators
-  const [showLeftShadow, setShowLeftShadow] = useState(false);
-  const [showRightShadow, setShowRightShadow] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
   // State for mission detail modal
   const [selectedCalendarMission, setSelectedCalendarMission] =
-    useState<any>(null);
+    useState<Mission | null>(null);
   const [showMissionDetailModal, setShowMissionDetailModal] = useState(false);
+
+  // Handle mission click in calendar
+  const handleCalendarMissionClick = (missionId: string) => {
+    const mission = missions.find((m) => m.id === missionId);
+    if (mission) {
+      setSelectedCalendarMission(mission);
+      setShowMissionDetailModal(true);
+    }
+  };
 
   // Get missions for calendar view (only matched ones)
   const calendarMissions = missions
@@ -675,126 +641,9 @@ const StudentDashboard = ({
       date: mission.date,
       time: mission.time,
       tutorName:
-        matchedHelpers.find((helper) => helper.missionId === mission.id)
-          ?.name || "Unknown Helper",
+        matchedTutors.find((tutor) => tutor.missionId === mission.id)?.name ||
+        "Unknown Tutor",
     }));
-
-  // Handle mission completion
-  const handleMissionComplete = (missionId: string) => {
-    const mission = missions.find((m) => m.id === missionId);
-    if (!mission) return;
-
-    // Update mission status based on current status
-    let newStatus: string;
-    if (mission.status === "matched") {
-      newStatus = "needer_completed";
-    } else if (mission.status === "helper_completed") {
-      newStatus = "completed";
-    } else {
-      return; // Already completed or invalid status
-    }
-
-    // Update the completed missions state
-    setCompletedMissions((prev) => ({
-      ...prev,
-      [missionId]: newStatus,
-    }));
-
-    // Update the mission status in the missions array
-    const updatedMissions = missions.map((m) =>
-      m.id === missionId ? { ...m, status: newStatus as any } : m,
-    );
-
-    // In a real app, this would be an API call to update the database
-    console.log(`Mission ${missionId} marked as ${newStatus}`);
-
-    // Show success message
-    toast({
-      title:
-        newStatus === "completed"
-          ? "Mission Completed!"
-          : "Confirmation Recorded",
-      description:
-        newStatus === "completed"
-          ? "Payment has been released to the helper. Thank you!"
-          : "Waiting for helper confirmation to complete the mission.",
-      duration: 5000,
-    });
-  };
-
-  // Handle scroll for horizontal mission list
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const container = e.currentTarget;
-    const scrollLeft = container.scrollLeft;
-    const scrollWidth = container.scrollWidth;
-    const clientWidth = container.clientWidth;
-
-    setShowLeftShadow(scrollLeft > 0);
-    setShowRightShadow(scrollLeft < scrollWidth - clientWidth - 1);
-  };
-
-  // Check initial scroll state
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      const scrollWidth = container.scrollWidth;
-      const clientWidth = container.clientWidth;
-      setShowRightShadow(scrollWidth > clientWidth);
-    }
-  }, [missions]);
-
-  // Get missions happening today
-  const getTodaysMissions = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    return missions.filter((mission) => {
-      const missionDate = new Date(mission.date);
-      missionDate.setHours(0, 0, 0, 0);
-      return (
-        missionDate.getTime() === today.getTime() &&
-        mission.status === "matched"
-      );
-    });
-  };
-
-  const todaysMissions = getTodaysMissions();
-
-  const handleCalendarMissionClick = (mission: any) => {
-    // Handle both old format (with just id) and new format (full mission object)
-    let fullMission;
-    if (mission.id && !mission.subject) {
-      // Old format - find the mission by ID
-      fullMission = missions.find((m) => m.id === mission.id);
-    } else {
-      // New format - mission object passed directly
-      fullMission = missions.find((m) => m.id === mission.id) || mission;
-    }
-
-    if (fullMission) {
-      setSelectedCalendarMission({
-        id: fullMission.id,
-        subject: fullMission.subject,
-        description: fullMission.description,
-        date: fullMission.date
-          ? fullMission.date.toLocaleDateString()
-          : mission.date?.toLocaleDateString() || "",
-        time: fullMission.time,
-        location: fullMission.location,
-        price: fullMission.price,
-        status: completedMissions[fullMission.id] || fullMission.status,
-        needer: {
-          name: "You",
-          image: "https://api.dicebear.com/7.x/avataaars/svg?seed=student",
-          rating: 4.8,
-          age: 20,
-          languages: ["English"],
-          location: "Student",
-        },
-      });
-      setShowMissionDetailModal(true);
-    }
-  };
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 bg-white">
@@ -812,282 +661,25 @@ const StudentDashboard = ({
             Create Mission
           </Button>
         </div>
-
-        {/* Enhanced Stats Cards with Scrollable Content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Help Missions Tile */}
-          <div className="bg-white rounded-lg border">
-            <div className="p-4 border-b">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Help Missions
-                  </p>
-                  <h3 className="text-2xl font-bold mt-1">
-                    {todaysMissions.length}
-                  </h3>
-                </div>
-                <div className="p-3 rounded-full bg-[#F37221]">
-                  <BookOpen className="h-5 w-5 text-white" />
-                </div>
-              </div>
-            </div>
-            {todaysMissions.length > 0 && (
-              <div className="p-4">
-                <div className="relative">
-                  <div className="flex gap-3 overflow-x-auto horizontal-scroll pb-2">
-                    {todaysMissions.map((mission) => {
-                      const matchedHelper = matchedHelpers.find(
-                        (helper) => helper.missionId === mission.id,
-                      );
-                      return (
-                        <div
-                          key={mission.id}
-                          className="flex-shrink-0 w-48 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
-                          onClick={() =>
-                            handleCalendarMissionClick({
-                              id: mission.id,
-                              subject: mission.subject,
-                              date: mission.date,
-                              time: mission.time,
-                              tutorName:
-                                matchedHelper?.name || "Unknown Helper",
-                            })
-                          }
-                        >
-                          <h4 className="font-medium text-sm mb-1 truncate">
-                            {mission.subject}
-                          </h4>
-                          <p className="text-xs text-gray-600 mb-2">
-                            {mission.time}
-                          </p>
-                          {matchedHelper && (
-                            <div className="flex items-center gap-2">
-                              <div className="h-6 w-6 rounded-full overflow-hidden">
-                                <img
-                                  src={matchedHelper.avatar}
-                                  alt={matchedHelper.name}
-                                  className="h-full w-full object-cover"
-                                />
-                              </div>
-                              <span className="text-xs text-gray-700 truncate">
-                                {matchedHelper.name}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Completions to Confirm Tile */}
-          <div className="bg-white rounded-lg border">
-            <div className="p-4 border-b">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Completions to Confirm
-                  </p>
-                  <h3 className="text-2xl font-bold mt-1">
-                    {
-                      missions.filter((mission) => {
-                        const missionDateTime = new Date(
-                          `${mission.date.toDateString()} ${mission.time.split(" - ")[1]}`,
-                        );
-                        const now = new Date();
-                        return (
-                          missionDateTime < now &&
-                          (mission.status === "matched" ||
-                            completedMissions[mission.id] ===
-                              "tutor_completed") &&
-                          completedMissions[mission.id] !==
-                            "student_completed" &&
-                          completedMissions[mission.id] !== "completed"
-                        );
-                      }).length
-                    }
-                  </h3>
-                </div>
-                <div className="p-3 rounded-full bg-[#F37221]">
-                  <CheckCircle className="h-5 w-5 text-white" />
-                </div>
-              </div>
-            </div>
-            {missions.filter((mission) => {
-              const missionDateTime = new Date(
-                `${mission.date.toDateString()} ${mission.time.split(" - ")[1]}`,
-              );
-              const now = new Date();
-              return (
-                missionDateTime < now &&
-                (mission.status === "matched" ||
-                  completedMissions[mission.id] === "helper_completed") &&
-                completedMissions[mission.id] !== "needer_completed" &&
-                completedMissions[mission.id] !== "completed"
-              );
-            }).length > 0 && (
-              <div className="p-4">
-                <div className="relative">
-                  <div className="flex gap-3 overflow-x-auto horizontal-scroll pb-2">
-                    {missions
-                      .filter((mission) => {
-                        const missionDateTime = new Date(
-                          `${mission.date.toDateString()} ${mission.time.split(" - ")[1]}`,
-                        );
-                        const now = new Date();
-                        return (
-                          missionDateTime < now &&
-                          (mission.status === "matched" ||
-                            completedMissions[mission.id] ===
-                              "tutor_completed") &&
-                          completedMissions[mission.id] !==
-                            "student_completed" &&
-                          completedMissions[mission.id] !== "completed"
-                        );
-                      })
-                      .map((mission) => {
-                        const matchedHelper = matchedHelpers.find(
-                          (helper) => helper.missionId === mission.id,
-                        );
-                        const isWaitingForStudent =
-                          completedMissions[mission.id] === "helper_completed";
-                        return (
-                          <div
-                            key={mission.id}
-                            className="flex-shrink-0 w-52 p-3 bg-gray-50 rounded-lg"
-                          >
-                            <h4 className="font-medium text-sm mb-1 truncate">
-                              {mission.subject}
-                            </h4>
-                            <p className="text-xs text-gray-600 mb-2">
-                              {mission.date.toLocaleDateString()} •{" "}
-                              {mission.time}
-                            </p>
-                            {matchedHelper && (
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="h-6 w-6 rounded-full overflow-hidden">
-                                  <img
-                                    src={matchedHelper.avatar}
-                                    alt={matchedHelper.name}
-                                    className="h-full w-full object-cover"
-                                  />
-                                </div>
-                                <span className="text-xs text-gray-700 truncate">
-                                  {matchedHelper.name}
-                                </span>
-                              </div>
-                            )}
-                            <div className="mb-2">
-                              <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
-                                {isWaitingForStudent
-                                  ? "Waiting for you"
-                                  : "Waiting for helper"}
-                              </span>
-                            </div>
-                            {!isWaitingForStudent && (
-                              <Button
-                                size="sm"
-                                className="w-full text-xs bg-[#F37221] hover:bg-[#F37221]/90 text-white"
-                                onClick={() =>
-                                  handleMissionComplete(mission.id)
-                                }
-                              >
-                                Confirm Completion
-                              </Button>
-                            )}
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Pending Reviews Tile */}
-          <div className="bg-white rounded-lg border">
-            <div className="p-4 border-b">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Pending Reviews
-                  </p>
-                  <h3 className="text-2xl font-bold mt-1">
-                    {
-                      missions.filter(
-                        (mission) =>
-                          completedMissions[mission.id] === "completed" ||
-                          mission.status === "completed",
-                      ).length
-                    }
-                  </h3>
-                </div>
-                <div className="p-3 rounded-full bg-[#F37221]">
-                  <Star className="h-5 w-5 text-white" />
-                </div>
-              </div>
-            </div>
-            {missions.filter(
-              (mission) =>
-                completedMissions[mission.id] === "completed" ||
-                mission.status === "completed",
-            ).length > 0 && (
-              <div className="p-4">
-                <div className="relative">
-                  <div className="flex gap-3 overflow-x-auto horizontal-scroll pb-2">
-                    {missions
-                      .filter(
-                        (mission) =>
-                          completedMissions[mission.id] === "completed" ||
-                          mission.status === "completed",
-                      )
-                      .map((mission) => {
-                        const matchedHelper = matchedHelpers.find(
-                          (helper) => helper.missionId === mission.id,
-                        );
-                        return (
-                          <div
-                            key={mission.id}
-                            className="flex-shrink-0 w-52 p-3 bg-gray-50 rounded-lg"
-                          >
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="h-8 w-8 rounded-full overflow-hidden">
-                                <img
-                                  src={
-                                    matchedHelper?.avatar ||
-                                    "https://api.dicebear.com/7.x/avataaars/svg?seed=helper"
-                                  }
-                                  alt={matchedHelper?.name || "Helper"}
-                                  className="h-full w-full object-cover"
-                                />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <span className="text-sm font-medium truncate block">
-                                  {matchedHelper?.name || "Helper"}
-                                </span>
-                                <p className="text-xs text-gray-600">
-                                  {mission.date.toLocaleDateString()}
-                                </p>
-                              </div>
-                            </div>
-                            <Button
-                              size="sm"
-                              className="w-full text-xs text-[#F37221] bg-white border border-[#F37221] hover:bg-[#F37221]/10"
-                            >
-                              Leave Review
-                            </Button>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          <StatsCard
+            title="Help Missions"
+            value={3}
+            icon={<BookOpen className="h-5 w-5 text-white" />}
+            userRole="student"
+          />
+          <StatsCard
+            title="Completions to Confirm"
+            value={1}
+            icon={<CheckCircle className="h-5 w-5 text-white" />}
+            userRole="student"
+          />
+          <StatsCard
+            title="Pending Reviews"
+            value={2}
+            icon={<Star className="h-5 w-5 text-white" />}
+            userRole="student"
+          />
         </div>
       </div>
       <Tabs
@@ -1116,9 +708,10 @@ const StudentDashboard = ({
                 </div>
               )}
             </TabsTrigger>
-            <TabsTrigger value="calendar">Matched</TabsTrigger>
+
             <TabsTrigger value="pending">Pending</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
           </TabsList>
         </div>
 
@@ -1223,8 +816,8 @@ const StudentDashboard = ({
 
         <TabsContent value="new_matches" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {matchedHelpers.length > 0 ? (
-              matchedHelpers.map((tutor) => {
+            {matchedTutors.length > 0 ? (
+              matchedTutors.map((tutor) => {
                 // Mock data for tutor profile (in a real app, this would come from the database)
                 const tutorProfile = {
                   id: tutor.id,
@@ -1282,8 +875,8 @@ const StudentDashboard = ({
                     onClick={(e) => {
                       // Only open modal if not clicking on buttons
                       if (!(e.target as HTMLElement).closest("button")) {
-                        setSelectedHelperProfile(tutorProfile);
-                        setShowHelperProfileModal(true);
+                        setSelectedTutorProfile(tutorProfile);
+                        setShowTutorProfileModal(true);
                       }
                     }}
                   >
@@ -1337,7 +930,7 @@ const StudentDashboard = ({
                             </span>
                           </div>
                         </div>
-                        {acceptedHelpers.includes(tutor.id) &&
+                        {acceptedTutors.includes(tutor.id) &&
                           tutor.contactInfo && (
                             <div className="flex items-center gap-1 mt-2 pt-2 border-t border-gray-200">
                               <span className="font-medium flex items-center">
@@ -1349,20 +942,20 @@ const StudentDashboard = ({
                       </div>
                     </CardContent>
                     <CardFooter>
-                      {acceptedHelpers.includes(tutor.id) ? (
+                      {acceptedTutors.includes(tutor.id) ? (
                         <Button className="w-full bg-[#F37221] hover:bg-[#F37221]/90 text-white">
-                          Contact Helper
+                          Contact Tutor
                         </Button>
                       ) : (
                         <div className="flex gap-2 w-full">
                           <Button
                             className="flex-1 bg-[#F37221] hover:bg-[#F37221]/90 text-white"
                             onClick={() => {
-                              setSelectedHelperOffer({
-                                helperId: tutor.id,
+                              setSelectedTutorOffer({
+                                tutorId: tutor.id,
                                 missionId: tutor.missionId,
-                                helperName: tutor.name,
-                                helperAvatar: tutor.avatar,
+                                tutorName: tutor.name,
+                                tutorAvatar: tutor.avatar,
                               });
                               setShowPaymentModal(true);
                             }}
@@ -1373,7 +966,7 @@ const StudentDashboard = ({
                             variant="outline"
                             className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
                             onClick={() =>
-                              handleRejectHelper(tutor.id, tutor.missionId)
+                              handleRejectTutor(tutor.id, tutor.missionId)
                             }
                           >
                             Reject
@@ -1387,7 +980,7 @@ const StudentDashboard = ({
             ) : (
               <div className="col-span-full text-center py-10">
                 <p className="text-gray-500">
-                  No helpers have matched with your missions yet.
+                  No tutors have matched with your missions yet.
                 </p>
               </div>
             )}
@@ -1400,11 +993,11 @@ const StudentDashboard = ({
               missions
                 .filter((m) => m.status === "matched")
                 .map((mission) => {
-                  // Find the matched helper for this mission
-                  const matchedHelper = matchedHelpers.find(
-                    (helper) =>
-                      helper.missionId === mission.id &&
-                      acceptedHelpers.includes(helper.id),
+                  // Find the matched tutor for this mission
+                  const matchedTutor = matchedTutors.find(
+                    (tutor) =>
+                      tutor.missionId === mission.id &&
+                      acceptedTutors.includes(tutor.id),
                   );
 
                   return (
@@ -1418,21 +1011,19 @@ const StudentDashboard = ({
                         </div>
                       </CardHeader>
                       <CardContent>
-                        {matchedHelper && (
+                        {matchedTutor && (
                           <div className="flex items-center space-x-3 mb-3 pb-3 border-b border-gray-100">
                             <div className="h-12 w-12 rounded-full overflow-hidden">
                               <img
-                                src={matchedHelper.avatar}
-                                alt={matchedHelper.name}
+                                src={matchedTutor.avatar}
+                                alt={matchedTutor.name}
                                 className="h-full w-full object-cover"
                               />
                             </div>
                             <div>
-                              <p className="font-medium">
-                                {matchedHelper.name}
-                              </p>
+                              <p className="font-medium">{matchedTutor.name}</p>
                               <p className="text-xs text-gray-500">
-                                Your matched helper
+                                Your matched tutor
                               </p>
                             </div>
                           </div>
@@ -1470,15 +1061,14 @@ const StudentDashboard = ({
                         </div>
                       </CardContent>
                       <CardFooter className="flex justify-between mt-2">
-                        {matchedHelper && matchedHelper.contactInfo ? (
+                        {matchedTutor && matchedTutor.contactInfo ? (
                           <Button className="w-full bg-[#F37221] hover:bg-[#F37221]/90 text-white">
-                            <Phone className="h-4 w-4 mr-2" /> Contact Helper:{" "}
-                            {matchedHelper.contactInfo}
+                            <Phone className="h-4 w-4 mr-2" /> Contact Tutor:{" "}
+                            {matchedTutor.contactInfo}
                           </Button>
                         ) : (
                           <p className="text-sm text-gray-600">
-                            You have been matched with a helper for this
-                            mission.
+                            You have been matched with a tutor for this mission.
                           </p>
                         )}
                       </CardFooter>
@@ -1488,7 +1078,7 @@ const StudentDashboard = ({
             ) : (
               <div className="col-span-full text-center py-10">
                 <p className="text-gray-500">
-                  No matched missions found. Accept a helper to see them here.
+                  No matched missions found. Accept a tutor to see them here.
                 </p>
               </div>
             )}
@@ -1545,7 +1135,7 @@ const StudentDashboard = ({
                     </CardContent>
                     <CardFooter className="flex justify-between mt-2">
                       <p className="text-sm text-gray-600">
-                        Helpers have applied to help with this mission.
+                        Tutors have applied to help with this mission.
                       </p>
                     </CardFooter>
                   </Card>
@@ -1553,7 +1143,7 @@ const StudentDashboard = ({
             ) : (
               <div className="col-span-full text-center py-10">
                 <p className="text-gray-500">
-                  No helpers have applied to your missions yet.
+                  No tutors have applied to your missions yet.
                 </p>
               </div>
             )}
@@ -1711,23 +1301,12 @@ const StudentDashboard = ({
         </TabsContent>
 
         <TabsContent value="create">
-          <div className="mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setActiveTab("missions")}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 p-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Missions
-            </Button>
-          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Create New Help Mission</CardTitle>
+                <CardTitle>Create New Tutoring Mission</CardTitle>
                 <CardDescription>
-                  Fill out the details below to create a new help mission
+                  Fill out the details below to create a new tutoring mission
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1791,49 +1370,20 @@ const StudentDashboard = ({
 
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <Label htmlFor="subject">Choose a subject</Label>
-                      {showOtherSubject && (
-                        <span className="text-xs text-gray-500">
-                          {otherSubjectText?.length || 0}/100
-                        </span>
-                      )}
+                      <Label htmlFor="subject">Title</Label>
+                      <span className="text-xs text-gray-500">
+                        {newMission.subject?.length || 0}/100
+                      </span>
                     </div>
-                    <Select
-                      onValueChange={handleSubjectChange}
-                      value={
-                        showOtherSubject ? "Other" : newMission.subject || ""
-                      }
-                    >
-                      <SelectTrigger
-                        className={formErrors.subject ? "border-red-500" : ""}
-                      >
-                        <SelectValue placeholder="Select a subject" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Mathematics">Mathematics</SelectItem>
-                        <SelectItem value="Physics">Physics</SelectItem>
-                        <SelectItem value="Chemistry">Chemistry</SelectItem>
-                        <SelectItem value="Biology">Biology</SelectItem>
-                        <SelectItem value="English">English</SelectItem>
-                        <SelectItem value="German">German</SelectItem>
-                        <SelectItem value="French">French</SelectItem>
-                        <SelectItem value="History">History</SelectItem>
-                        <SelectItem value="Geography">Geography</SelectItem>
-                        <SelectItem value="Programming">Programming</SelectItem>
-                        <SelectItem value="Economics">Economics</SelectItem>
-                        <SelectItem value="Law">Law</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {showOtherSubject && (
-                      <Input
-                        placeholder="Please specify the subject"
-                        value={otherSubjectText}
-                        onChange={handleOtherSubjectChange}
-                        maxLength={100}
-                        className={formErrors.subject ? "border-red-500" : ""}
-                      />
-                    )}
+                    <Input
+                      id="subject"
+                      name="subject"
+                      placeholder="e.g. Mathematics, Physics, Chemistry"
+                      value={newMission.subject}
+                      onChange={handleInputChange}
+                      maxLength={100}
+                      className={formErrors.subject ? "border-red-500" : ""}
+                    />
                     {formErrors.subject && (
                       <div className="text-red-500 text-xs flex items-center gap-1 mt-1">
                         <AlertCircle className="h-3 w-3" />
@@ -1916,6 +1466,10 @@ const StudentDashboard = ({
                                 )
                               ).toFixed(0)
                             : newMission.price}
+                          {isHourlyRate &&
+                            newMission.startTime &&
+                            newMission.endTime &&
+                            ` (${newMission.price} × ${calculateDuration(newMission.startTime, newMission.endTime).toFixed(1)}h)`}
                           <div className="text-xs text-gray-500">
                             this is how much you will pay
                           </div>
@@ -1957,11 +1511,8 @@ const StudentDashboard = ({
                     <div className="flex justify-between items-center">
                       <Label htmlFor="date">Date & Time</Label>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="md:col-span-1">
-                        <Label htmlFor="date" className="text-xs mb-1 block">
-                          Date
-                        </Label>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="col-span-1">
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button
@@ -1998,8 +1549,8 @@ const StudentDashboard = ({
                           </div>
                         )}
                       </div>
-                      <div className="md:col-span-2">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="col-span-2">
+                        <div className="grid grid-cols-2 gap-2">
                           <div>
                             <Label
                               htmlFor="startTime"
@@ -2087,7 +1638,7 @@ const StudentDashboard = ({
                       <Input
                         id="location"
                         name="location"
-                        placeholder="Enter location or PLZ (e.g. 8001, Online, ETH Library...)"
+                        placeholder="e.g. Online, Library, etc."
                         value={newMission.location}
                         onChange={handleInputChange}
                         className={`rounded-l-none ${formErrors.location ? "border-red-500" : ""}`}
@@ -2211,9 +1762,10 @@ const StudentDashboard = ({
                   What happens next?
                 </h4>
                 <ul className="mt-2 text-xs text-blue-700 space-y-1 list-disc pl-4">
-                  <li>Your mission will be visible to qualified helpers</li>
-                  <li>Helpers can apply to help with your mission</li>
-                  <li>You'll receive notifications when helpers apply</li>
+                  <li>Your mission will be visible to qualified tutors</li>
+                  <li>Tutors can apply to help with your mission</li>
+                  <li>You'll receive notifications when tutors apply</li>
+                  <li>You can review and accept the best match</li>
                 </ul>
               </div>
             </div>
@@ -2222,31 +1774,31 @@ const StudentDashboard = ({
       </Tabs>
 
       {/* Payment Modal */}
-      {showPaymentModal && selectedHelperOffer && (
+      {showPaymentModal && selectedTutorOffer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Complete Payment</h3>
             <div className="flex items-center gap-4 mb-4">
               <div className="h-12 w-12 rounded-full overflow-hidden">
                 <img
-                  src={selectedHelperOffer.helperAvatar}
-                  alt={selectedHelperOffer.helperName}
+                  src={selectedTutorOffer.tutorAvatar}
+                  alt={selectedTutorOffer.tutorName}
                   className="h-full w-full object-cover"
                 />
               </div>
               <div>
-                <p className="font-medium">{selectedHelperOffer.helperName}</p>
-                <p className="text-sm text-gray-600">Helper</p>
+                <p className="font-medium">{selectedTutorOffer.tutorName}</p>
+                <p className="text-sm text-gray-600">Tutor</p>
               </div>
             </div>
             <div className="bg-gray-50 p-4 rounded-md mb-4">
               <p className="text-sm text-gray-600 mb-2">Payment Details:</p>
-              {selectedHelperOffer && (
+              {selectedTutorOffer && (
                 <>
                   <div className="font-medium">
                     {(() => {
                       const mission = missions.find(
-                        (m) => m.id === selectedHelperOffer.missionId,
+                        (m) => m.id === selectedTutorOffer.missionId,
                       );
                       if (!mission || !mission.price)
                         return "Amount: CHF 25.00";
@@ -2264,7 +1816,7 @@ const StudentDashboard = ({
                         <div className="space-y-1">
                           <p>You pay: CHF {totalPrice.toFixed(0)}</p>
                           <p className="text-sm">
-                            Helper receives: CHF {tutorReceives.toFixed(0)}
+                            Tutor receives: CHF {tutorReceives.toFixed(0)}
                           </p>
                         </div>
                       );
@@ -2274,8 +1826,7 @@ const StudentDashboard = ({
                     Funds will be held in escrow until the mission is completed
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    12% platform fee included to keep Helpii running and get a
-                    cookie sometimes
+                    12% platform fee included to keep Helpii running
                   </p>
                 </>
               )}
@@ -2295,7 +1846,7 @@ const StudentDashboard = ({
                 className="w-full"
                 onClick={() => {
                   setShowPaymentModal(false);
-                  setSelectedHelperOffer(null);
+                  setSelectedTutorOffer(null);
                 }}
               >
                 Cancel
@@ -2305,48 +1856,48 @@ const StudentDashboard = ({
         </div>
       )}
 
-      {/* Helper Profile Modal */}
+      {/* Tutor Profile Modal */}
       <Dialog
-        open={showHelperProfileModal}
-        onOpenChange={setShowHelperProfileModal}
+        open={showTutorProfileModal}
+        onOpenChange={setShowTutorProfileModal}
       >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          {selectedHelperProfile && (
+          {selectedTutorProfile && (
             <>
               <DialogHeader>
                 <div className="flex items-start gap-4">
                   <div className="h-20 w-20 rounded-full overflow-hidden">
                     <img
-                      src={selectedHelperProfile.avatar}
-                      alt={selectedHelperProfile.name}
+                      src={selectedTutorProfile.avatar}
+                      alt={selectedTutorProfile.name}
                       className="h-full w-full object-cover"
                     />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <DialogTitle className="text-2xl">
-                        {selectedHelperProfile.name}
+                        {selectedTutorProfile.name}
                       </DialogTitle>
-                      {selectedHelperProfile.isHelpHero && (
+                      {selectedTutorProfile.isHelpHero && (
                         <Badge className="bg-gradient-to-r from-amber-400 to-amber-600 text-white">
                           Help Hero
                         </Badge>
                       )}
                     </div>
                     <DialogDescription className="mt-1">
-                      {selectedHelperProfile.slogan}
+                      {selectedTutorProfile.slogan}
                     </DialogDescription>
                   </div>
                 </div>
               </DialogHeader>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                {/* Left column - Helper info */}
+                {/* Left column - Tutor info */}
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-medium mb-2">I help with</h3>
                     <div className="flex flex-wrap gap-2">
-                      {selectedHelperProfile.subjects.map((subject: string) => (
+                      {selectedTutorProfile.subjects.map((subject: string) => (
                         <Badge key={subject} className="px-3 py-1">
                           {subject}
                         </Badge>
@@ -2359,8 +1910,8 @@ const StudentDashboard = ({
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-gray-500" />
                       <span>
-                        {selectedHelperProfile.location} (
-                        {selectedHelperProfile.radius}km radius)
+                        {selectedTutorProfile.location} (
+                        {selectedTutorProfile.radius}km radius)
                       </span>
                     </div>
                   </div>
@@ -2369,7 +1920,7 @@ const StudentDashboard = ({
                     <h3 className="font-medium mb-2">Languages I speak</h3>
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4 text-gray-500" />
-                      <span>{selectedHelperProfile.languages.join(", ")}</span>
+                      <span>{selectedTutorProfile.languages.join(", ")}</span>
                     </div>
                   </div>
 
@@ -2378,10 +1929,10 @@ const StudentDashboard = ({
                       Why you should choose me
                     </h3>
                     <p className="text-sm">
-                      {selectedHelperProfile.whyChooseMe}
+                      {selectedTutorProfile.whyChooseMe}
                     </p>
 
-                    {selectedHelperProfile.videoUrl && (
+                    {selectedTutorProfile.videoUrl && (
                       <div className="mt-2 flex items-center gap-2 text-blue-600">
                         <Video className="h-4 w-4" />
                         <span className="text-sm">
@@ -2393,10 +1944,10 @@ const StudentDashboard = ({
 
                   <div className="pt-2 border-t border-gray-200">
                     <div className="text-sm text-gray-600 mb-2">
-                      On helpii since {selectedHelperProfile.joinDate}
+                      On helpii since {selectedTutorProfile.joinDate}
                     </div>
                     <div className="text-sm text-gray-600">
-                      {selectedHelperProfile.missionsCompleted} missions
+                      {selectedTutorProfile.missionsCompleted} missions
                       completed
                     </div>
                   </div>
@@ -2405,16 +1956,93 @@ const StudentDashboard = ({
                 {/* Right column - Ratings and reviews */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="font-medium mb-3">Needer Reviews</h3>
+                    <h3 className="font-medium mb-3">Rating Details</h3>
+                    <div className="mb-2">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Friendliness</span>
+                        <span>
+                          {selectedTutorProfile.ratingDetails.friendliness.toFixed(
+                            1,
+                          )}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div
+                          className="bg-yellow-400 h-1.5 rounded-full"
+                          style={{
+                            width: `${(selectedTutorProfile.ratingDetails.friendliness / 5) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div className="mb-2">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Reliability</span>
+                        <span>
+                          {selectedTutorProfile.ratingDetails.reliability.toFixed(
+                            1,
+                          )}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div
+                          className="bg-yellow-400 h-1.5 rounded-full"
+                          style={{
+                            width: `${(selectedTutorProfile.ratingDetails.reliability / 5) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div className="mb-2">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Skills</span>
+                        <span>
+                          {selectedTutorProfile.ratingDetails.skills.toFixed(1)}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div
+                          className="bg-yellow-400 h-1.5 rounded-full"
+                          style={{
+                            width: `${(selectedTutorProfile.ratingDetails.skills / 5) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div className="mb-2">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Efficiency</span>
+                        <span>
+                          {selectedTutorProfile.ratingDetails.efficiency.toFixed(
+                            1,
+                          )}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div
+                          className="bg-yellow-400 h-1.5 rounded-full"
+                          style={{
+                            width: `${(selectedTutorProfile.ratingDetails.efficiency / 5) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4">
+                    <h3 className="font-medium mb-3">Student Reviews</h3>
                     <div className="space-y-4">
-                      {selectedHelperProfile.reviews.map((review: any) => (
+                      {selectedTutorProfile.reviews.map((review: any) => (
                         <div
                           key={review.id}
                           className="bg-gray-50 p-3 rounded-md"
                         >
                           <div className="flex justify-between items-center mb-1">
                             <span className="font-medium">
-                              {review.neederName}
+                              {review.studentName}
                             </span>
                             <div className="flex items-center">
                               <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
@@ -2436,7 +2064,7 @@ const StudentDashboard = ({
               <DialogFooter className="mt-6">
                 <Button
                   variant="outline"
-                  onClick={() => setShowHelperProfileModal(false)}
+                  onClick={() => setShowTutorProfileModal(false)}
                   className="mr-2"
                 >
                   Close
@@ -2444,16 +2072,16 @@ const StudentDashboard = ({
                 <Button
                   className="bg-[#F37221] hover:bg-[#F37221]/90 text-white"
                   onClick={() => {
-                    setShowHelperProfileModal(false);
-                    if (selectedHelperProfile) {
-                      setSelectedHelperOffer({
-                        helperId: selectedHelperProfile.id,
+                    setShowTutorProfileModal(false);
+                    if (selectedTutorProfile) {
+                      setSelectedTutorOffer({
+                        tutorId: selectedTutorProfile.id,
                         missionId:
-                          matchedHelpers.find(
-                            (t) => t.id === selectedHelperProfile.id,
+                          matchedTutors.find(
+                            (t) => t.id === selectedTutorProfile.id,
                           )?.missionId || "",
-                        helperName: selectedHelperProfile.name,
-                        helperAvatar: selectedHelperProfile.avatar,
+                        tutorName: selectedTutorProfile.name,
+                        tutorAvatar: selectedTutorProfile.avatar,
                       });
                       setShowPaymentModal(true);
                     }
@@ -2467,14 +2095,36 @@ const StudentDashboard = ({
         </DialogContent>
       </Dialog>
 
-      {/* Mission Detail Modal */}
-      <MissionDetail
-        isOpen={showMissionDetailModal}
-        onClose={() => setShowMissionDetailModal(false)}
-        mission={selectedCalendarMission}
-        userRole="needer"
-        onComplete={handleMissionComplete}
-      />
+      {/* Mission Detail Modal for Calendar */}
+      {selectedCalendarMission && (
+        <MissionDetail
+          isOpen={showMissionDetailModal}
+          onClose={() => setShowMissionDetailModal(false)}
+          mission={{
+            id: selectedCalendarMission.id,
+            subject: selectedCalendarMission.subject,
+            description: selectedCalendarMission.description,
+            date: selectedCalendarMission.date.toLocaleDateString(),
+            time: selectedCalendarMission.time,
+            location: selectedCalendarMission.location,
+            price: formatPriceDisplay(selectedCalendarMission),
+            status:
+              completedMissions[selectedCalendarMission.id] ||
+              selectedCalendarMission.status ||
+              "matched",
+            student: {
+              name: "You", // Since this is student's dashboard
+              image: "https://api.dicebear.com/7.x/avataaars/svg?seed=student",
+              rating: 5,
+              age: 20,
+              languages: ["English"],
+              location: selectedCalendarMission.location,
+            },
+          }}
+          userRole="student"
+          onComplete={handleMissionComplete}
+        />
+      )}
     </div>
   );
 };
