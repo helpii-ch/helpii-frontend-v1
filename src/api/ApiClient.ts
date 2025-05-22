@@ -2,6 +2,7 @@
  * ApiClient for handling HTTP requests
  * Uses environment variables for base URL configuration
  */
+import { Mission, PagedResponse } from "../types/mission";
 
 type RequestOptions = {
   headers?: Record<string, string>;
@@ -116,6 +117,19 @@ class ApiClient {
     }
 
     return response.json();
+  }
+
+  // Fetch help missions with optional pagination parameters
+  async getHelpMissions(
+    page: number = 1,
+    pageSize: number = 10,
+  ): Promise<PagedResponse<Mission>> {
+    return this.get<PagedResponse<Mission>>("/help-missions", {
+      params: {
+        page: page.toString(),
+        pageSize: pageSize.toString(),
+      },
+    });
   }
 }
 

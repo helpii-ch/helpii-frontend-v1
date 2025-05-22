@@ -42,6 +42,7 @@ const MissionDetail = ({
   userRole,
   onHelp = () => {},
   onCantHelp = () => {},
+  onComplete,
 }: MissionDetailProps) => {
   if (!mission) return null;
 
@@ -151,19 +152,110 @@ const MissionDetail = ({
           </div>
         </div>
 
-        {userRole === "tutor" && (
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={onCantHelp}>
-              Can't Help
-            </Button>
-            <Button
-              onClick={onHelp}
-              className="bg-[#5E17EB] hover:bg-[#5E17EB]/90 text-white"
-            >
-              Help
-            </Button>
-          </DialogFooter>
-        )}
+        {userRole === "tutor" &&
+          mission?.status !== "matched" &&
+          mission?.status !== "completed" &&
+          mission?.status !== "student_completed" &&
+          mission?.status !== "tutor_completed" && (
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={onCantHelp}>
+                Can't Help
+              </Button>
+              <Button
+                onClick={onHelp}
+                className="bg-[#5E17EB] hover:bg-[#5E17EB]/90 text-white"
+              >
+                Help
+              </Button>
+            </DialogFooter>
+          )}
+
+        {mission?.status === "matched" ||
+        mission?.status === "student_completed" ||
+        mission?.status === "tutor_completed" ? (
+          <div className="mt-6 border-t pt-4">
+            <div className="flex flex-col gap-2">
+              {mission.status === "student_completed" &&
+                userRole === "student" && (
+                  <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-700">
+                    You have marked this mission as complete. Waiting for the
+                    tutor to confirm.
+                  </div>
+                )}
+              {mission.status === "tutor_completed" && userRole === "tutor" && (
+                <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-700">
+                  You have marked this mission as complete. Waiting for the
+                  student to confirm.
+                </div>
+              )}
+              {mission.status === "student_completed" &&
+                userRole === "tutor" && (
+                  <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-700">
+                    The student has marked this mission as complete. Please
+                    confirm if the mission is complete.
+                  </div>
+                )}
+              {mission.status === "tutor_completed" &&
+                userRole === "student" && (
+                  <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-700">
+                    The tutor has marked this mission as complete. Please
+                    confirm if the mission is complete.
+                  </div>
+                )}
+              {mission.status === "completed" && (
+                <div className="bg-green-50 p-3 rounded-md text-sm text-green-700">
+                  This mission has been completed and payment has been released
+                  to the tutor.
+                </div>
+              )}
+
+              <div className="text-xs text-gray-500 flex items-center gap-1 mb-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-info"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4" />
+                  <path d="M12 8h.01" />
+                </svg>
+                Both tutor and student need to confirm the mission is complete
+                for payment to be released.
+              </div>
+
+              {mission.status !== "completed" && (
+                <DialogFooter className="gap-2">
+                  {(userRole === "student" &&
+                    mission.status !== "student_completed") ||
+                  (userRole === "tutor" &&
+                    mission.status !== "tutor_completed") ? (
+                    <Button
+                      onClick={() => onComplete && onComplete(mission.id)}
+                      className="bg-green-600 hover:bg-green-700 text-white w-full"
+                    >
+                      Mark as Completed
+                    </Button>
+                  ) : (
+                    <Button
+                      disabled
+                      className="bg-gray-300 text-gray-600 w-full cursor-not-allowed"
+                    >
+                      Waiting for {userRole === "student" ? "tutor" : "student"}{" "}
+                      to confirm
+                    </Button>
+                  )}
+                </DialogFooter>
+              )}
+            </div>
+          </div>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

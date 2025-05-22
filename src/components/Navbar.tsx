@@ -1,6 +1,15 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import RoleToggle from "./RoleToggle";
-import { BookOpen, Bell, User, Calendar, LogOut, Globe } from "lucide-react";
+import {
+  BookOpen,
+  Bell,
+  User,
+  Calendar,
+  LogOut,
+  Globe,
+  Menu,
+  X,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface NavbarProps {
@@ -21,10 +30,13 @@ const Navbar = ({
   notificationCount = activeRole === "tutor" ? 1 : 1,
 }: NavbarProps) => {
   const { t, i18n } = useTranslation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
   };
+
   const roleColorClass =
     activeRole === "tutor" ? "tutor-primary-text" : "student-primary-text";
   const roleBgClass =
@@ -33,6 +45,26 @@ const Navbar = ({
     activeRole === "tutor" ? "bg-purple-50" : "bg-orange-50";
   const activeTabTextClass =
     activeRole === "tutor" ? "text-[#5E17EB]" : "text-[#F37221]";
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Handle menu item click
+  const handleMenuItemClick = (tab: string) => {
+    onTabChange(tab);
+    setMobileMenuOpen(false);
+  };
 
   return (
     <header
@@ -44,7 +76,7 @@ const Navbar = ({
           <h1 className={`text-2xl font-bold ${roleColorClass}`}>helpii</h1>
         </div>
 
-        {/* Navigation */}
+        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
           <button
             onClick={() => onTabChange("missions")}
@@ -103,9 +135,112 @@ const Navbar = ({
           </button>
         </nav>
 
+        {/* Mobile Menu Button */}
+        <div className="flex items-center md:hidden">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+
         {/* Role Toggle */}
-        <RoleToggle activeRole={activeRole} onRoleChange={onRoleChange} />
+        <div className="hidden md:block">
+          <RoleToggle activeRole={activeRole} onRoleChange={onRoleChange} />
+        </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div
+          ref={menuRef}
+          className="md:hidden fixed inset-0 z-50 bg-white bg-opacity-95 transform transition-transform duration-300 ease-in-out"
+        >
+          <div className="flex flex-col h-full p-6 pt-20">
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-md text-gray-600 hover:bg-gray-100"
+              aria-label="Close menu"
+            >
+              <X size={24} />
+            </button>
+
+            <div className="mb-8">
+              <RoleToggle
+                activeRole={activeRole}
+                onRoleChange={(role) => {
+                  onRoleChange(role);
+                  setMobileMenuOpen(false);
+                }}
+              />
+            </div>
+
+            <nav className="flex flex-col space-y-4">
+              <button
+                onClick={() => handleMenuItemClick("missions")}
+                className={`flex items-center gap-2 px-3 py-4 rounded-md transition-colors ${activeTab === "missions" ? `${activeTabBgClass} ${activeTabTextClass}` : "text-gray-600"}`}
+              >
+                <Calendar size={20} />
+                <span className="text-lg">{t("navbar.yourMissions")}</span>
+              </button>
+              <button
+                onClick={() => handleMenuItemClick("profile")}
+                className={`flex items-center gap-2 px-3 py-4 rounded-md transition-colors ${activeTab === "profile" ? `${activeTabBgClass} ${activeTabTextClass}` : "text-gray-600"}`}
+              >
+                <User size={20} />
+                <span className="text-lg">{t("navbar.profile")}</span>
+              </button>
+              <button
+                onClick={() => handleMenuItemClick("notifications")}
+                className={`flex items-center gap-2 px-3 py-4 rounded-md transition-colors ${activeTab === "notifications" ? `${activeTabBgClass} ${activeTabTextClass}` : "text-gray-600"}`}
+              >
+                <Bell size={20} />
+                <span className="text-lg">{t("navbar.notifications")}</span>
+                {notificationCount > 0 && (
+                  <div className="ml-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {notificationCount}
+                  </div>
+                )}
+              </button>
+
+              <div className="py-4 border-t border-gray-200">
+                <div className="mb-4">
+                  <p className="text-sm text-gray-500 mb-2">
+                    {t("navbar.language")}
+                  </p>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => changeLanguage("en")}
+                      className={`px-4 py-2 rounded-md ${i18n.language === "en" ? "bg-gray-100 font-bold" : ""}`}
+                    >
+                      English
+                    </button>
+                    <button
+                      onClick={() => changeLanguage("de")}
+                      className={`px-4 py-2 rounded-md ${i18n.language === "de" ? "bg-gray-100 font-bold" : ""}`}
+                    >
+                      Deutsch
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  onLogout();
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-2 px-3 py-4 rounded-md text-red-600 mt-auto"
+              >
+                <LogOut size={20} />
+                <span className="text-lg">{t("navbar.logout")}</span>
+              </button>
+            </nav>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

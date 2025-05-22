@@ -2,6 +2,7 @@ import { Mission } from "@/types/mission.ts";
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Search, BookOpen, CheckCircle, Star } from "lucide-react";
 import MissionCard from "./MissionCard";
 import StatsCard from "./StatsCard";
@@ -296,11 +297,17 @@ const TutorFeed: React.FC<TutorFeedProps> = ({
             time: selectedMission.time,
             location: selectedMission.location,
             price: selectedMission.price,
+            status:
+              completedMissions[selectedMission.id] ||
+              (matchedMissions.includes(selectedMission.id)
+                ? "matched"
+                : "pending"),
             student: selectedMission.student,
           }}
           userRole="tutor"
           onHelp={() => handleHelp(selectedMission.id)}
           onCantHelp={() => setIsDetailOpen(false)}
+          onComplete={handleMissionComplete}
         />
       )}
 

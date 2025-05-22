@@ -2108,6 +2108,10 @@ const StudentDashboard = ({
             time: selectedCalendarMission.time,
             location: selectedCalendarMission.location,
             price: formatPriceDisplay(selectedCalendarMission),
+            status:
+              completedMissions[selectedCalendarMission.id] ||
+              selectedCalendarMission.status ||
+              "matched",
             student: {
               name: "You", // Since this is student's dashboard
               image: "https://api.dicebear.com/7.x/avataaars/svg?seed=student",
@@ -2118,6 +2122,7 @@ const StudentDashboard = ({
             },
           }}
           userRole="student"
+          onComplete={handleMissionComplete}
         />
       )}
     </div>
