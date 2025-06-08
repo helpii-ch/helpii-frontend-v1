@@ -15,7 +15,7 @@ interface Mission {
 interface MissionCalendarProps {
   missions: Mission[];
   userRole: "needer" | "helper";
-  onMissionClick?: (mission: Mission) => void;
+  onMissionClick?: (missionId: string) => void;
 }
 
 const MissionCalendar = ({
@@ -159,7 +159,7 @@ const MissionCalendar = ({
                   {dayMissions.map((mission) => (
                     <div
                       key={mission.id}
-                      onClick={() => onMissionClick(mission)}
+                      onClick={() => onMissionClick(mission.id)}
                       className="text-xs p-1 mb-1 bg-blue-50 rounded cursor-pointer hover:bg-blue-100 transition-colors"
                     >
                       <p className="font-medium truncate">{mission.subject}</p>

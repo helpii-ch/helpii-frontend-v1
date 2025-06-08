@@ -66,26 +66,6 @@ const Navbar = ({
     setMobileMenuOpen(false);
   };
 
-  // Close mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  // Handle menu item click
-  const handleMenuItemClick = (tab: string) => {
-    onTabChange(tab);
-    setMobileMenuOpen(false);
-  };
-
   return (
     <header
       className={`bg-white shadow-sm py-4 px-6 sticky top-0 z-50 border-b-2 ${activeRole === "helper" ? "border-[#5E17EB]" : "border-[#F37221]"}`}
@@ -95,13 +75,9 @@ const Navbar = ({
         <div className="flex items-center">
           <button
             onClick={() => onTabChange("missions")}
-            className="hover:opacity-80 transition-opacity cursor-pointer"
+            className={`text-2xl font-bold ${roleColorClass} hover:opacity-80 transition-opacity cursor-pointer`}
           >
-            <img
-              src="/dist/assets/Logo_d.svg"
-              alt="helpii"
-              className="h-8 w-auto"
-            />
+            helpii
           </button>
         </div>
 
