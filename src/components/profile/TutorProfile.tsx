@@ -31,15 +31,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-interface TutorProfileProps {
-  activeRole: "tutor" | "student";
+interface HelperProfileProps {
+  activeRole: "helper" | "needer";
   onTabChange: (tab: string) => void;
 }
 
-interface TutorData {
+interface HelperData {
   profilePicture: string;
   firstName: string;
   lastName: string;
+  email: string;
   birthdate: Date | undefined;
   phoneNumber: string;
   aboutMe: string;
@@ -62,17 +63,18 @@ interface TutorData {
   };
 }
 
-const TutorProfile = ({ activeRole, onTabChange }: TutorProfileProps) => {
+const HelperProfile = ({ activeRole, onTabChange }: HelperProfileProps) => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [completionPercentage, setCompletionPercentage] = useState(30);
 
-  const [profile, setProfile] = useState<TutorData>({
+  const [profile, setProfile] = useState<HelperData>({
     profilePicture: "",
     firstName: "John",
     lastName: "Doe",
+    email: "john.doe@example.com",
     birthdate: new Date(1995, 0, 15),
     phoneNumber: "+41 79 123 45 67",
     aboutMe: "",
@@ -210,7 +212,7 @@ const TutorProfile = ({ activeRole, onTabChange }: TutorProfileProps) => {
 
   return (
     <ProfileLayout
-      title="Tutor Profile"
+      title="Helper Profile"
       isEditing={isEditing}
       onBack={handleBack}
       onToggleEdit={() => setIsEditing(true)}
@@ -362,6 +364,19 @@ const TutorProfile = ({ activeRole, onTabChange }: TutorProfileProps) => {
               </div>
             </div>
 
+            {/* Email */}
+            <div>
+              <Label htmlFor="email" className="flex items-center gap-1">
+                Email Address
+              </Label>
+              <div className="mt-1 flex items-center gap-2">
+                <span className="text-gray-600">{profile.email}</span>
+                <span className="text-xs text-gray-500 italic">
+                  (Registration email - cannot be changed here)
+                </span>
+              </div>
+            </div>
+
             {/* Birthdate and Phone */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -430,7 +445,7 @@ const TutorProfile = ({ activeRole, onTabChange }: TutorProfileProps) => {
                       <TooltipContent>
                         <p className="max-w-xs text-xs">
                           We use this to pay you via TWINT and share it with
-                          students after a match
+                          needers after a match
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -486,16 +501,18 @@ const TutorProfile = ({ activeRole, onTabChange }: TutorProfileProps) => {
 
             {/* Motivation */}
             <div>
-              <Label htmlFor="motivation" className="flex items-center gap-1">
-                I'm on helpii because...
-              </Label>
+              <div className="flex justify-between items-center">
+                <Label htmlFor="motivation" className="flex items-center gap-1">
+                  I'm on helpii because...
+                </Label>
+              </div>
               {isEditing ? (
                 <Textarea
                   id="motivation"
                   name="motivation"
                   value={profile.motivation}
                   onChange={handleInputChange}
-                  placeholder="Share your motivation for tutoring..."
+                  placeholder="Share your motivation for helping..."
                   className="mt-1"
                   rows={3}
                 />
@@ -701,7 +718,7 @@ const TutorProfile = ({ activeRole, onTabChange }: TutorProfileProps) => {
                   name="whyChooseMe"
                   value={profile.whyChooseMe}
                   onChange={handleInputChange}
-                  placeholder="What makes you stand out as a tutor?"
+                  placeholder="What makes you stand out as a helper?"
                   className="mt-1"
                   rows={3}
                 />
@@ -796,9 +813,10 @@ const TutorProfile = ({ activeRole, onTabChange }: TutorProfileProps) => {
                   </h3>
                   <p className="text-xs text-gray-600">
                     Your contact information (phone number) will only be shared
-                    with students after they have completed the payment for the
-                    help mission. Your birthday will not be shared with students
-                    (only your age).
+                    with needers after they have completed the payment for the
+                    help mission. Your birthdate is used for age verification
+                    and will not be shared with needers (only your age will be
+                    shared with needers).
                   </p>
                 </div>
               </div>
@@ -810,4 +828,4 @@ const TutorProfile = ({ activeRole, onTabChange }: TutorProfileProps) => {
   );
 };
 
-export default TutorProfile;
+export default HelperProfile;

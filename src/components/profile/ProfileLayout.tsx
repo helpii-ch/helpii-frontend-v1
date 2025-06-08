@@ -1,12 +1,13 @@
 import React from "react";
 import { ArrowLeft, Edit, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface ProfileLayoutProps {
   children: React.ReactNode;
   title: string;
   isEditing: boolean;
-  onBack: () => void;
+  onBack?: () => void;
   onToggleEdit: () => void;
   onSave?: () => void;
   completionPercentage?: number;
@@ -25,14 +26,29 @@ export const ProfileLayout = ({
   isFirstTime = false,
   role = "tutor",
 }: ProfileLayoutProps) => {
+  const navigate = useNavigate();
+
   // Use CSS variable names for cleaner theme handling
   const primaryColorVar =
     role === "student" ? "var(--student-primary)" : "var(--tutor-primary)";
 
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      navigate(-1);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center mb-6">
-        <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleBack}
+          className="mr-2"
+        >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h2 className="text-3xl font-bold">{title}</h2>

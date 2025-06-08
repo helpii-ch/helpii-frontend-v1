@@ -22,12 +22,12 @@ import {
   Phone,
 } from "lucide-react";
 
-interface StudentProfileProps {
-  activeRole: "tutor" | "student";
+interface NeederProfileProps {
+  activeRole: "helper" | "needer";
   onTabChange: (tab: string) => void;
 }
 
-interface StudentData {
+interface NeederData {
   profilePicture: string;
   firstName: string;
   lastName: string;
@@ -42,14 +42,14 @@ interface StudentData {
   };
 }
 
-const StudentProfile = ({ activeRole, onTabChange }: StudentProfileProps) => {
+const NeederProfile = ({ activeRole, onTabChange }: NeederProfileProps) => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [completionPercentage, setCompletionPercentage] = useState(40);
 
-  const [profile, setProfile] = useState<StudentData>({
+  const [profile, setProfile] = useState<NeederData>({
     profilePicture: "",
     firstName: "Alex",
     lastName: "Johnson",
@@ -157,7 +157,7 @@ const StudentProfile = ({ activeRole, onTabChange }: StudentProfileProps) => {
 
   return (
     <ProfileLayout
-      title="Student Profile"
+      title="Needer Profile"
       isEditing={isEditing}
       onBack={handleBack}
       onToggleEdit={() => setIsEditing(true)}
@@ -474,10 +474,10 @@ const StudentProfile = ({ activeRole, onTabChange }: StudentProfileProps) => {
                 Privacy Information
               </h4>
               <p className="text-xs text-blue-700">
-                Your contact information will not be shared with tutors. Your
+                Your contact information will not be shared with helpers. Your
                 phone number is used to pay you via TWINT . Your birthdate is
-                used for age verification and will not be shared with tutors
-                (only your age will be shared with tutors).
+                used for age verification and will not be shared with helpers
+                (only your age will be shared with helpers).
               </p>
             </div>
           </div>
@@ -487,4 +487,4 @@ const StudentProfile = ({ activeRole, onTabChange }: StudentProfileProps) => {
   );
 };
 
-export default StudentProfile;
+export default NeederProfile;

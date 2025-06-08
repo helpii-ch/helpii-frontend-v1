@@ -119,3 +119,21 @@
 .student-secondary-text {
   color: var(--student-secondary);
 }
+
+/* Horizontal scroll styles */
+.horizontal-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.scroll-shadow-left {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.8), transparent);
+}
+
+.scroll-shadow-right {
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.8), transparent);
+}

@@ -14,15 +14,15 @@ interface MissionCardProps {
   subject?: string;
   description?: string;
   imageUrl?: string;
-  userRole?: "tutor" | "student";
+  userRole?: "helper" | "needer";
   onHelp?: (id: string) => void;
   onCantHelp?: (id: string) => void;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   isMatched?: boolean;
-  studentName?: string;
-  studentRating?: number;
-  studentImage?: string;
+  neederName?: string;
+  neederRating?: number;
+  neederImage?: string;
   price?: string;
   date?: string;
   time?: string;
@@ -34,17 +34,17 @@ interface MissionCardProps {
 const MissionCard = ({
   id = "1",
   subject = "Mathematics",
-  description = "Need help with calculus and linear algebra. Looking for a tutor who can explain complex concepts in simple terms.",
+  description = "Need help with calculus and linear algebra. Looking for a helper who can explain complex concepts in simple terms.",
   imageUrl = "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=500&q=80",
-  userRole = "tutor",
+  userRole = "helper",
   onHelp = () => {},
   onCantHelp = () => {},
   onEdit = () => {},
   onDelete = () => {},
   isMatched = false,
-  studentName = "Alex Johnson",
-  studentRating = 4.5,
-  studentImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
+  neederName = "Alex Johnson",
+  neederRating = 4.5,
+  neederImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
   price = "$25/hr",
   date = "Today",
   time = "3:00 PM - 5:00 PM",
@@ -90,16 +90,16 @@ const MissionCard = ({
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-full overflow-hidden">
               <img
-                src={studentImage}
-                alt={studentName}
+                src={neederImage}
+                alt={neederName}
                 className="h-full w-full object-cover"
               />
             </div>
-            <span className="text-sm font-medium">{studentName}</span>
+            <span className="text-sm font-medium">{neederName}</span>
           </div>
           <div className="flex items-center gap-1">
             <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-            <span className="text-xs">{studentRating}</span>
+            <span className="text-xs">{neederRating}</span>
           </div>
         </div>
       </CardHeader>
@@ -119,7 +119,7 @@ const MissionCard = ({
       </CardContent>
       <CardFooter className="p-3 pt-0 flex justify-between items-center">
         <span className="font-semibold text-sm">{price}</span>
-        {userRole === "tutor" ? (
+        {userRole === "helper" ? (
           <Button
             onClick={(e) => {
               e.stopPropagation();
