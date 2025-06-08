@@ -13,8 +13,8 @@ import {
 import { useTranslation } from "react-i18next";
 
 interface NavbarProps {
-  activeRole?: "student" | "tutor";
-  onRoleChange?: (role: "student" | "tutor") => void;
+  activeRole?: "needer" | "helper";
+  onRoleChange?: (role: "needer" | "helper") => void;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
   onLogout?: () => void;
@@ -22,12 +22,12 @@ interface NavbarProps {
 }
 
 const Navbar = ({
-  activeRole = "student",
+  activeRole = "needer",
   onRoleChange = () => {},
   activeTab = "overview",
   onTabChange = () => {},
   onLogout = () => {},
-  notificationCount = activeRole === "tutor" ? 1 : 1,
+  notificationCount = activeRole === "helper" ? 1 : 1,
 }: NavbarProps) => {
   const { t, i18n } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -38,13 +38,13 @@ const Navbar = ({
   };
 
   const roleColorClass =
-    activeRole === "tutor" ? "tutor-primary-text" : "student-primary-text";
+    activeRole === "helper" ? "helper-primary-text" : "needer-primary-text";
   const roleBgClass =
-    activeRole === "tutor" ? "tutor-primary-bg" : "student-primary-bg";
+    activeRole === "helper" ? "helper-primary-bg" : "needer-primary-bg";
   const activeTabBgClass =
-    activeRole === "tutor" ? "bg-purple-50" : "bg-orange-50";
+    activeRole === "helper" ? "bg-purple-50" : "bg-orange-50";
   const activeTabTextClass =
-    activeRole === "tutor" ? "text-[#5E17EB]" : "text-[#F37221]";
+    activeRole === "helper" ? "text-[#5E17EB]" : "text-[#F37221]";
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -68,12 +68,17 @@ const Navbar = ({
 
   return (
     <header
-      className={`bg-white shadow-sm py-4 px-6 sticky top-0 z-50 border-b-2 ${activeRole === "tutor" ? "border-[#5E17EB]" : "border-[#F37221]"}`}
+      className={`bg-white shadow-sm py-4 px-6 sticky top-0 z-50 border-b-2 ${activeRole === "helper" ? "border-[#5E17EB]" : "border-[#F37221]"}`}
     >
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
         <div className="flex items-center">
-          <h1 className={`text-2xl font-bold ${roleColorClass}`}>helpii</h1>
+          <button
+            onClick={() => onTabChange("missions")}
+            className={`text-2xl font-bold ${roleColorClass} hover:opacity-80 transition-opacity cursor-pointer`}
+          >
+            helpii
+          </button>
         </div>
 
         {/* Desktop Navigation */}
