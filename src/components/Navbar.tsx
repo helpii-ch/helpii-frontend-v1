@@ -75,9 +75,13 @@ const Navbar = ({
         <div className="flex items-center">
           <button
             onClick={() => onTabChange("missions")}
-            className={`text-2xl font-bold ${roleColorClass} hover:opacity-80 transition-opacity cursor-pointer`}
+            className="hover:opacity-80 transition-opacity cursor-pointer"
           >
-            helpii
+            <img
+              src="/dist/assets/Logo_d.svg"
+              alt="helpii"
+              className="h-8 w-auto"
+            />
           </button>
         </div>
 

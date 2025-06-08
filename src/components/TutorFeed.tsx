@@ -269,28 +269,44 @@ const HelperFeed: React.FC<HelperFeedProps> = ({
     setIsDetailOpen(false);
   };
 
-  const handleMissionClick = (mission: Mission) => {
-    setSelectedMission({
+  const handleMissionClick = (mission: Mission | any) => {
+    // Handle both Mission type and calendar mission format
+    const missionData = {
       id: mission.id,
       subject: mission.subject,
       description: mission.description,
-      date: mission.date.toLocaleDateString(),
+      date: mission.date
+        ? mission.date.toLocaleDateString
+          ? mission.date.toLocaleDateString()
+          : mission.date
+        : "",
       time: mission.time,
       location: mission.location,
       price: mission.price,
-      status: helpedMissions.includes(mission.id)
-        ? "matched"
-        : appliedMissions.includes(mission.id)
-          ? "applied"
-          : completedMissions[mission.id] === "helper_completed"
-            ? "helper_completed"
-            : completedMissions[mission.id] === "needer_completed"
-              ? "needer_completed"
-              : completedMissions[mission.id] === "completed"
-                ? "completed"
-                : "pending",
-      needer: mission.needer,
-    });
+      status:
+        mission.status ||
+        (helpedMissions.includes(mission.id)
+          ? "matched"
+          : appliedMissions.includes(mission.id)
+            ? "applied"
+            : completedMissions[mission.id] === "helper_completed"
+              ? "helper_completed"
+              : completedMissions[mission.id] === "needer_completed"
+                ? "needer_completed"
+                : completedMissions[mission.id] === "completed"
+                  ? "completed"
+                  : "pending"),
+      needer: mission.needer || {
+        name: mission.neederName || "Unknown",
+        image: "https://api.dicebear.com/7.x/avataaars/svg?seed=needer",
+        rating: 4.5,
+        age: 20,
+        languages: ["English"],
+        location: "Unknown",
+      },
+    };
+
+    setSelectedMission(missionData);
     setIsDetailOpen(true);
   };
 
@@ -361,9 +377,15 @@ const HelperFeed: React.FC<HelperFeedProps> = ({
     .map((mission) => ({
       id: mission.id,
       subject: mission.subject,
+      description: mission.description,
       date: mission.date,
       time: mission.time,
+      location: mission.location,
+      price: mission.price,
       neederName: mission.neederName,
+      helperName: "You",
+      needer: mission.needer,
+      status: completedMissions[mission.id] || "matched",
     }));
 
   return (
@@ -400,7 +422,8 @@ const HelperFeed: React.FC<HelperFeedProps> = ({
                     {todaysMissions.map((mission) => (
                       <div
                         key={mission.id}
-                        className="flex-shrink-0 w-48 p-3 bg-gray-50 rounded-lg"
+                        className="flex-shrink-0 w-48 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                        onClick={() => handleMissionClick(mission)}
                       >
                         <h4 className="font-medium text-sm mb-1 truncate">
                           {mission.subject}
@@ -783,7 +806,11 @@ const HelperFeed: React.FC<HelperFeedProps> = ({
 
         <TabsContent value="matched">
           {matchedMissions.length > 0 ? (
-            <MissionCalendar missions={calendarMissions} userRole="helper" />
+            <MissionCalendar
+              missions={calendarMissions}
+              userRole="helper"
+              onMissionClick={handleMissionClick}
+            />
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <h3 className="text-xl font-medium text-gray-800 mb-2">

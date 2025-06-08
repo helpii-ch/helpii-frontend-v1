@@ -761,13 +761,24 @@ const StudentDashboard = ({
   const todaysMissions = getTodaysMissions();
 
   const handleCalendarMissionClick = (mission: any) => {
-    const fullMission = missions.find((m) => m.id === mission.id);
+    // Handle both old format (with just id) and new format (full mission object)
+    let fullMission;
+    if (mission.id && !mission.subject) {
+      // Old format - find the mission by ID
+      fullMission = missions.find((m) => m.id === mission.id);
+    } else {
+      // New format - mission object passed directly
+      fullMission = missions.find((m) => m.id === mission.id) || mission;
+    }
+
     if (fullMission) {
       setSelectedCalendarMission({
         id: fullMission.id,
         subject: fullMission.subject,
         description: fullMission.description,
-        date: fullMission.date.toLocaleDateString(),
+        date: fullMission.date
+          ? fullMission.date.toLocaleDateString()
+          : mission.date?.toLocaleDateString() || "",
         time: fullMission.time,
         location: fullMission.location,
         price: fullMission.price,
@@ -832,7 +843,17 @@ const StudentDashboard = ({
                       return (
                         <div
                           key={mission.id}
-                          className="flex-shrink-0 w-48 p-3 bg-gray-50 rounded-lg"
+                          className="flex-shrink-0 w-48 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                          onClick={() =>
+                            handleCalendarMissionClick({
+                              id: mission.id,
+                              subject: mission.subject,
+                              date: mission.date,
+                              time: mission.time,
+                              tutorName:
+                                matchedHelper?.name || "Unknown Helper",
+                            })
+                          }
                         >
                           <h4 className="font-medium text-sm mb-1 truncate">
                             {mission.subject}

@@ -59,19 +59,9 @@ const MissionDetail = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-bold">
-              {mission.subject}
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle className="text-xl font-bold">
+            {mission.subject}
+          </DialogTitle>
         </DialogHeader>
 
         {userRole === "helper" ? (
@@ -158,13 +148,25 @@ const MissionDetail = ({
                 <p className="font-medium">{mission.location}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge
-                variant="outline"
-                className="px-3 py-1 text-base font-bold"
-              >
-                {mission.price}
-              </Badge>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                {userRole === "helper" ? (
+                  <Badge
+                    variant="outline"
+                    className="px-3 py-1 text-base font-bold text-green-600 border-green-600"
+                  >
+                    You earn: CHF{" "}
+                    {(parseFloat(mission.price) * 0.85).toFixed(2)}/hr
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant="outline"
+                    className="px-3 py-1 text-base font-bold text-blue-600 border-blue-600"
+                  >
+                    You paid: CHF {mission.price}/hr
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
         </div>
