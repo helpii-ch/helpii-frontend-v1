@@ -3,6 +3,8 @@ import {
   NeederMissionResponse,
   StudentMissionCardProps,
 } from "@/types/api";
+import { HelpMissionContent } from "@/types/helpMissionResponseDto";
+import { Mission } from "@/types/mission";
 
 /**
  * Transform HelperMissionResponse from API to format expected by MissionCard component
@@ -210,7 +212,7 @@ export const getNeederMissionStatusClasses = (
   status: NeederMissionResponse["status"],
 ) => {
   const statusClasses = {
-    pending: "bg-yellow-100 text-yellow-800",
+    open: "bg-yellow-100 text-yellow-800",
     applied: "bg-purple-100 text-purple-800",
     matched: "bg-blue-100 text-blue-800",
     completed: "bg-green-100 text-green-800",
@@ -252,7 +254,7 @@ export const getStudentMissionStatusClasses = (
   status: StudentMissionCardProps["status"],
 ) => {
   const statusClasses = {
-    pending: "bg-yellow-100 text-yellow-800",
+    open: "bg-yellow-100 text-yellow-800",
     applied: "bg-purple-100 text-purple-800",
     matched: "bg-blue-100 text-blue-800",
     completed: "bg-green-100 text-green-800",
@@ -261,3 +263,53 @@ export const getStudentMissionStatusClasses = (
 
   return statusClasses[status] || "bg-gray-100 text-gray-800";
 };
+
+/**
+ * Ensures a string is a valid MissionStatus, otherwise returns 'open' as fallback.
+ */
+export function toMissionStatus(status: string): import("@/types/helpMissionResponseDto").MissionStatus {
+  const validStatuses = [
+    "open",
+    "applied",
+    "matched",
+    "rejected",
+    "completed"
+  ];
+  return validStatuses.includes(status) ? (status as import("@/types/helpMissionResponseDto").MissionStatus) : "open";
+}
+
+/**
+ * Transform HelpMissionContent from API to format expected by Mission component
+ */
+export const transformHelpMissionContentToMission = (mission: HelpMissionContent): Mission => {
+  return {
+    id: mission.id,
+    subject: mission.title || mission.category,
+    description: mission.description,
+    imageUrl: undefined, // You can enhance this if you have image data
+    tags: mission.category ? [mission.category] : [],
+    isMatched: mission.status === "matched",
+    neederName: mission.student?.name || "",
+    neederImage: mission.student?.image || "",
+    neederRating: mission.student?.rating || 0,
+    price: mission.helperPrice ? `${mission.helperPrice} €` : "",
+    date: new Date(mission.startTime),
+    time: `${new Date(mission.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(mission.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+    location: mission.location,
+    status: toMissionStatus(mission.status),
+    needer: {
+      name: mission.student?.name || "",
+      image: mission.student?.image || "",
+      rating: mission.student?.rating || 0,
+      age: mission.student?.age || 0,
+      languages: mission.student?.languages || [],
+      location: mission.student?.location || "",
+    },
+  };
+};
+
+/**
+ * Transform array of HelpMissionContent to Mission components
+ */
+export const transformHelpMissionContentsToMissions = (missions: HelpMissionContent[]): Mission[] =>
+  missions.map(transformHelpMissionContentToMission);
