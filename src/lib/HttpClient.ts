@@ -1,81 +1,44 @@
-class HttpClient {
-  private baseUrl: string;
+// src/lib/HttpClient.ts
+import { Configuration } from '@/generated/api';
+import { config } from './config';
+import { setAuthToken } from './api-config';
+
+export class HttpClient {
+  public readonly baseUrl: string;
+  private readonly timeout: number;
 
   constructor() {
-    // Use development URL in dev mode, production URL in production
-    this.baseUrl = import.meta.env.DEV
-      ? import.meta.env.VITE_API_URL_DEVELOPMENT || "http://localhost:3000/api"
-      : import.meta.env.VITE_API_URL_PRODUCTION ||
-        "https://api.yourservice.com";
-  }
-
-  private async request<T>(
-    path: string,
-    options: RequestInit = {},
-  ): Promise<T> {
-    const url = `${this.baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
-
-    const config: RequestInit = {
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-      ...options,
-    };
-
-    try {
-      const response = await fetch(url, config);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        return await response.json();
-      }
-
-      return response.text() as unknown as T;
-    } catch (error) {
-      console.error("HTTP request failed:", error);
-      throw error;
+    this.baseUrl = config.api.baseUrl;
+    this.timeout = config.api.timeout;
+    // Initialize with fake JWT token from environment variables
+    const fakeJwtToken = import.meta.env.VITE_FAKE_JWT_TOKEN;
+    if (fakeJwtToken) {
+      setAuthToken(fakeJwtToken);
     }
   }
 
-  async get<T>(path: string): Promise<T> {
-    return this.request<T>(path, {
-      method: "GET",
-    });
-  }
-
-  async post<T>(path: string, body: any): Promise<T> {
-    return this.request<T>(path, {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
-  }
-
-  async put<T>(path: string, body: any): Promise<T> {
-    return this.request<T>(path, {
-      method: "PUT",
-      body: JSON.stringify(body),
-    });
-  }
-
-  async delete<T>(path: string): Promise<T> {
-    return this.request<T>(path, {
-      method: "DELETE",
-    });
-  }
-
-  async patch<T>(path: string, body: any): Promise<T> {
-    return this.request<T>(path, {
-      method: "PATCH",
-      body: JSON.stringify(body),
+  createConfiguration(): Configuration {
+    return new Configuration({
+      basePath: this.baseUrl,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      middleware: [{
+        pre: async (context) => {
+          const controller = new AbortController();
+          setTimeout(() => controller.abort(), this.timeout);
+          context.init.signal = controller.signal;
+          return context;
+        },
+        post: async (context) => {
+          if (!context.response.ok) {
+            throw new Error(`HTTP error! Status: ${context.response.status}`);
+          }
+          return context;
+        }
+      }]
     });
   }
 }
 
-// Export a singleton instance
 export const httpClient = new HttpClient();
-export default httpClient;

@@ -1,210 +1,46 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Search,
-  BookOpen,
-  CheckCircle,
-  Star,
-  MapPin,
-  ArrowLeft,
-  Phone,
-} from "lucide-react";
+import React, {useEffect, useRef, useState} from "react";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
+import {BookOpen, CheckCircle, Clock, MapPin, Search, Star,} from "lucide-react";
 import MissionCard from "./MissionCard";
-import StatsCard from "./StatsCard";
 import MissionCalendar from "./MissionCalendar";
 import MissionDetail from "./MissionDetail";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface Mission {
-  id: string;
-  subject: string;
-  description: string;
-  imageUrl?: string;
-  tags: string[];
-  isMatched?: boolean;
-  neederName: string;
-  neederImage: string;
-  neederRating: number;
-  price: string;
-  date: Date;
-  time: string;
-  location: string;
-  needer: {
-    name: string;
-    image: string;
-    rating: number;
-    age: number;
-    languages: string[];
-    location: string;
-  };
-}
+import {Card, CardContent} from "@/components/ui/card";
+import {missionService} from "@/api/services/MissionService";
+import {transformHelpMissionContentsToMissions} from "@/utils/missionTransformers";
+import {ApplicationService} from "@/api/services/ApplicationService";
+import {Mission} from "@/types/mission.ts";
 
 interface HelperFeedProps {
-  missions?: Mission[];
   onHelp?: (missionId: string) => void;
 }
 
 const HelperFeed: React.FC<HelperFeedProps> = ({
-  missions = [
-    {
-      id: "1",
-      subject: "Mathematics",
-      description:
-        "Need help with calculus and differential equations for upcoming exam.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&q=80",
-      tags: ["Calculus", "University", "Exam Prep"],
-      neederName: "Alex Johnson",
-      neederImage:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
-      neederRating: 4.8,
-      price: "$25/hr",
-      date: new Date(),
-      time: "3:00 PM - 5:00 PM",
-      location: "Online",
-      needer: {
-        name: "Alex Johnson",
-        image:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
-        rating: 4.8,
-        age: 19,
-        languages: ["English", "Spanish"],
-        location: "New York, NY",
-      },
-    },
-    {
-      id: "2",
-      subject: "Physics",
-      description:
-        "Looking for assistance with mechanics and thermodynamics concepts.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=800&q=80",
-      tags: ["Mechanics", "High School", "Weekly"],
-      neederName: "Emma Wilson",
-      neederImage:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80",
-      neederRating: 4.5,
-      price: "$30/hr",
-      date: new Date(Date.now() + 86400000), // Tomorrow
-      time: "4:00 PM - 6:00 PM",
-      location: "Local Library",
-      needer: {
-        name: "Emma Wilson",
-        image:
-          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80",
-        rating: 4.5,
-        age: 17,
-        languages: ["English"],
-        location: "Boston, MA",
-      },
-    },
-    {
-      id: "3",
-      subject: "Computer Science",
-      description: "Need help understanding data structures and algorithms.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80",
-      tags: ["Programming", "University", "Project"],
-      neederName: "Michael Chen",
-      neederImage:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80",
-      neederRating: 4.9,
-      price: "$35/hr",
-      date: new Date(Date.now() + 172800000), // Day after tomorrow
-      time: "6:00 PM - 8:00 PM",
-      location: "Online",
-      needer: {
-        name: "Michael Chen",
-        image:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80",
-        rating: 4.9,
-        age: 21,
-        languages: ["English", "Mandarin"],
-        location: "San Francisco, CA",
-      },
-    },
-    {
-      id: "4",
-      subject: "English Literature",
-      description: "Looking for help analyzing Shakespeare and writing essays.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&q=80",
-      tags: ["Literature", "High School", "Essay Writing"],
-      neederName: "Sophia Martinez",
-      neederImage:
-        "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&q=80",
-      neederRating: 4.7,
-      price: "$28/hr",
-      date: new Date(Date.now() + 259200000), // 3 days from now
-      time: "5:00 PM - 6:30 PM",
-      location: "Coffee Shop",
-      needer: {
-        name: "Sophia Martinez",
-        image:
-          "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&q=80",
-        rating: 4.7,
-        age: 18,
-        languages: ["English", "Spanish"],
-        location: "Miami, FL",
-      },
-    },
-    {
-      id: "5",
-      subject: "Chemistry",
-      description:
-        "Need assistance with organic chemistry reactions and mechanisms.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=800&q=80",
-      tags: ["Organic Chemistry", "University", "Lab Work"],
-      neederName: "James Wilson",
-      neederImage:
-        "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&q=80",
-      neederRating: 4.6,
-      price: "$32/hr",
-      date: new Date(Date.now() + 345600000), // 4 days from now
-      time: "2:00 PM - 4:00 PM",
-      location: "University Lab",
-      needer: {
-        name: "James Wilson",
-        image:
-          "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&q=80",
-        rating: 4.6,
-        age: 20,
-        languages: ["English"],
-        location: "Chicago, IL",
-      },
-    },
-    {
-      id: "6",
-      subject: "History",
-      description: "Looking for help with world history research project.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=800&q=80",
-      tags: ["World History", "Research", "High School"],
-      neederName: "Olivia Brown",
-      neederImage:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80",
-      neederRating: 4.4,
-      price: "$27/hr",
-      date: new Date(Date.now() + 432000000), // 5 days from now
-      time: "4:30 PM - 6:30 PM",
-      location: "Public Library",
-      needer: {
-        name: "Olivia Brown",
-        image:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80",
-        rating: 4.4,
-        age: 16,
-        languages: ["English", "French"],
-        location: "Seattle, WA",
-      },
-    },
-  ],
   onHelp = (missionId) => console.log(`Helped with mission ${missionId}`),
 }) => {
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchMissions = async () => {
+      try {
+        setLoading(true);
+        const response = await missionService.getMissions(0, 20);
+        console.log(response)
+        // response.data.content is the array of HelpMissionContent
+        setMissions(transformHelpMissionContentsToMissions(response.content));
+      } catch (err) {
+        setError("Failed to load missions");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMissions();
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("feed");
   const [helpedMissions, setHelpedMissions] = useState<string[]>([]);
@@ -227,29 +63,18 @@ const HelperFeed: React.FC<HelperFeedProps> = ({
   const [showRightShadow, setShowRightShadow] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleHelp = (missionId: string) => {
-    // Add to applied missions
-    setAppliedMissions((prev) => [...prev, missionId]);
-    onHelp(missionId);
-    setIsDetailOpen(false);
+  const appService = new ApplicationService();
 
-    // In a real app, this would send a notification to the needer
-    // For demo purposes, we'll simulate a needer accepting after 3 seconds
-    setTimeout(() => {
-      // Simulate needer accepting the help (70% chance)
-      if (Math.random() > 0.3) {
-        setMatchedMissions((prev) => [...prev, missionId]);
-        setHelpedMissions((prev) => [...prev, missionId]);
-        setAcceptedMissions((prev) => [...prev, missionId]);
-        setNotificationCount((prev) => prev + 1);
-        setShowNotification(true);
-
-        // Auto-hide notification after 5 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 5000);
-      }
-    }, 3000);
+  const handleHelp = async (missionId: string) => {
+    try {
+      // call backend via ApplicationService (convert missionId to number)
+      await appService.createHelpMissionApplication(parseInt(missionId));
+      setAppliedMissions((prev) => [...prev, missionId]);
+      onHelp(missionId);
+      setIsDetailOpen(false);
+    } catch (error) {
+      setError("Failed to apply to mission");
+    }
   };
 
   const handleMissionComplete = (missionId: string) => {
@@ -595,14 +420,14 @@ const HelperFeed: React.FC<HelperFeedProps> = ({
                           <div className="flex items-center gap-2 mb-3">
                             <div className="h-8 w-8 rounded-full overflow-hidden">
                               <img
-                                src={mission.studentImage}
-                                alt={mission.studentName}
+                                src={mission.neederImage}
+                                alt={mission.neederName}
                                 className="h-full w-full object-cover"
                               />
                             </div>
                             <div className="flex-1 min-w-0">
                               <span className="text-sm font-medium truncate block">
-                                {mission.studentName}
+                                {mission.neederName}
                               </span>
                               <p className="text-xs text-gray-600">
                                 {mission.date.toLocaleDateString()}

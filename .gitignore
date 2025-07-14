@@ -33,12 +33,11 @@ core
 .github/
 
 
-# Environment variables
+# Environment files
 .env
+.env.development
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*.local
 
 # Environment variables
 .env
@@ -46,3 +45,5 @@ core
 .env.development.local
 .env.test.local
 .env.production.local
+
+src/generated

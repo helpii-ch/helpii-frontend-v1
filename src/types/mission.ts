@@ -2,28 +2,24 @@
  * Mission interface representing a tutoring mission
  */
 
+import type { MissionStatus } from "./helpMissionResponseDto";
+
 export interface Mission {
   id: string;
   subject: string;
   description: string;
   imageUrl?: string;
-  tags: string[];
+  tags?: string[];
   isMatched?: boolean;
-  neederName: string;
-  neederImage: string;
-  neederRating: number;
+  neederName?: string;
+  neederImage?: string;
+  neederRating?: number;
   price: string;
+  helperPrice: string;
   date: Date;
   time: string;
   location: string;
-  status?:
-    | "pending"
-    | "matched"
-    | "completed"
-    | "new_match"
-    | "applied"
-    | "needer_completed"
-    | "helper_completed";
+  status?: string;
   needer: {
     name: string;
     image: string;

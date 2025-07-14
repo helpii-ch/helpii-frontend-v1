@@ -1,0 +1,807 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title": "Helpii Backend API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://{host}:{port}/api/v1",
+            "description": "",
+            "variables": {
+                "host": {
+                    "default": "localhost"
+                },
+                "port": {
+                    "default": "8081"
+                }
+            }
+        }
+    ],
+    "paths": {
+        "/help-missions": {
+            "get": {
+                "description": "Fetch all help missions",
+                "parameters": [
+                    {
+                        "name": "location",
+                        "description": "",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "in": "query"
+                    },
+                    {
+                        "name": "limit",
+                        "description": "",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "in": "query"
+                    },
+                    {
+                        "name": "offset",
+                        "description": "",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "in": "query",
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/PagedHelpMissionResponse"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/ErrorResponse"
+                    }
+                }
+            },
+            "post": {
+                "description": "Create help mission",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateHelpMissionDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelpMissionResponseDto"
+                                }
+                            }
+                        },
+                        "description": "HelpMission created successfully"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ErrorResponse"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/ErrorResponse"
+                    }
+                }
+            }
+        },
+        "/help-missions/{id}": {
+            "description": "Fetch help mission by Id"
+        },
+        "/users/me/created-help-missions": {
+            "get": {
+                "description": "Fetch help missions created by current user",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/PagedHelpMissionResponse"
+                    },
+                    "401": {
+                        "description": "Invalid or missing authentication"
+                    },
+                    "403": {
+                        "description": "Lack of permissions"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/ErrorResponse"
+                    }
+                }
+            }
+        },
+        "/users/me/applied-help-missions": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/PagedHelpMissionResponse"
+                    },
+                    "401": {
+                        "description": "Invalid or missing authentication"
+                    },
+                    "403": {
+                        "description": "Lack of permissions"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/ErrorResponse"
+                    }
+                },
+                "description": "Fetch helpMission the current user has applied to"
+            }
+        },
+        "/help-missions/{id}/helper": {
+            "post": {
+                "description": "Select helper for help mission",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SelectHelperDto"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HelpMissionResponseDto"
+                                }
+                            }
+                        },
+                        "description": "Select helper response"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/ErrorResponse"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                },
+                "summary": "Select helper for help mission"
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "description": "HelpMission id",
+                    "schema": {
+                        "type": "integer"
+                    },
+                    "in": "path",
+                    "required": true
+                }
+            ]
+        },
+        "/help-missions/{id}/applications": {
+            "description": "",
+            "get": {
+                "description": "Fetch all applications for help mission",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedApplicationResponseDto"
+                                }
+                            }
+                        },
+                        "description": "All applications to help mission"
+                    },
+                    "401": {
+                        "description": "Invalid or missing authentication"
+                    },
+                    "403": {
+                        "description": "Lack of permissions to access applications"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            },
+            "post": {
+                "description": "Create help mission Application",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApplicationResponseDto"
+                                }
+                            }
+                        },
+                        "description": "successfull application"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/ErrorResponse"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/ErrorResponse"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "description": "Help mission id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ]
+        },
+        "/applications": {
+            "get": {
+                "description": "Fetch all applications for a needer",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedApplicationResponseDto"
+                                }
+                            }
+                        },
+                        "description": "all open applications for needer"
+                    },
+                    "401": {
+                        "description": "Invalid or missing authentication"
+                    },
+                    "403": {
+                        "description": "Lack of permissions to access applications"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Student": {
+                "description": "",
+                "type": "object"
+            },
+            "Sort": {
+                "title": "Root Type for Sort",
+                "description": "",
+                "type": "object",
+                "properties": {
+                    "sorted": {
+                        "type": "boolean"
+                    },
+                    "unsorted": {
+                        "type": "boolean"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    }
+                },
+                "example": {
+                    "sorted": true,
+                    "unsorted": false,
+                    "empty": false
+                }
+            },
+            "Page": {
+                "title": "Root Type for Page",
+                "description": "",
+                "required": [
+                    "content"
+                ],
+                "type": "object",
+                "properties": {
+                    "totalPages": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "totalElements": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "size": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "number": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "numberOfElements": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    },
+                    "sort": {
+                        "$ref": "#/components/schemas/Sort",
+                        "description": ""
+                    },
+                    "content": {
+                        "description": "",
+                        "type": "array",
+                        "items": {}
+                    }
+                },
+                "example": [
+                    {
+                        "totalPages": 67,
+                        "totalElements": 48,
+                        "last": true,
+                        "size": 11,
+                        "number": 68,
+                        "numberOfElements": 90,
+                        "first": true,
+                        "empty": true,
+                        "sort": {
+                            "sorted": false,
+                            "unsorted": true,
+                            "empty": false
+                        },
+                        "content": [
+                            {},
+                            {}
+                        ]
+                    }
+                ]
+            },
+            "HelpMission": {
+                "title": "Root Type for HelpMission",
+                "description": "",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "offeredPrice": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "createdAt": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "neederId": {
+                        "type": "string"
+                    },
+                    "startTime": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "endTime": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "pricedHourly": {
+                        "type": "boolean"
+                    }
+                },
+                "example": {
+                    "id": 10,
+                    "title": "Math Tutoring in Zurich",
+                    "description": "Looking for a tutor to teach mathematics to a high school student.",
+                    "category": "Education",
+                    "location": "Zurich",
+                    "offeredPrice": 50,
+                    "createdAt": "2023-10-05T12:34:56",
+                    "status": "OPEN",
+                    "neederId": "user789",
+                    "startTime": "2023-10-07T08:00:00",
+                    "endTime": "2023-10-07T10:00:00",
+                    "pricedHourly": true
+                }
+            },
+            "PagedHelpMissionType": {
+                "title": "Root Type for PagedHelpMissionType",
+                "description": "",
+                "required": [
+                    "content"
+                ],
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/HelpMissionResponseDto"
+                        }
+                    },
+                    "totalPages": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "totalElements": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "size": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "number": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "numberOfElements": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    },
+                    "sort": {
+                        "type": "object",
+                        "properties": {
+                            "sorted": {
+                                "type": "boolean"
+                            },
+                            "unsorted": {
+                                "type": "boolean"
+                            },
+                            "empty": {
+                                "type": "boolean"
+                            }
+                        }
+                    }
+                },
+                "example": {
+                    "content": [],
+                    "totalPages": 20,
+                    "totalElements": 39,
+                    "last": false,
+                    "size": 34,
+                    "number": 60,
+                    "numberOfElements": 40,
+                    "first": false,
+                    "empty": false,
+                    "sort": {
+                        "sorted": false,
+                        "unsorted": true,
+                        "empty": true
+                    }
+                }
+            },
+            "Error": {
+                "title": "Root Type for Error",
+                "description": "",
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "format": "date-time",
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "error": "INTERNAL_ERROR",
+                    "message": "An unexpected error occurred",
+                    "timestamp": "2023-10-07T15:00:00Z"
+                }
+            },
+            "CreateHelpMissionDto": {
+                "title": "Root Type for CreateHelpMissionDto",
+                "description": "DTO to create a new help mission",
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "offeredPrice": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "startTime": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "endTime": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "pricedHourly": {
+                        "type": "boolean"
+                    }
+                },
+                "example": {
+                    "title": "Math Tutoring in Zurich",
+                    "description": "Looking for a math tutor to help with high school algebra and calculus.",
+                    "category": "Education",
+                    "location": "Zurich",
+                    "offeredPrice": 50,
+                    "startTime": "2023-10-07T08:00:00",
+                    "endTime": "2023-10-07T10:00:00",
+                    "pricedHourly": true
+                }
+            },
+            "HelpMissionResponseDto": {
+                "title": "Root Type for HelpMissionResponseDto",
+                "description": "",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "offeredPrice": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "helperPrice": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "createdAt": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "startTime": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "endTime": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "pricedHourly": {
+                        "type": "boolean"
+                    }
+                },
+                "example": {
+                    "id": 1,
+                    "title": "Math Tutoring in Zurich",
+                    "description": "Looking for a tutor to help with high school algebra and calculus.",
+                    "category": "Education",
+                    "location": "Zurich",
+                    "offeredPrice": 50,
+                    "helperPrice": 44,
+                    "createdAt": "2023-10-05T12:34:56",
+                    "status": "OPEN",
+                    "createdBy": "user789",
+                    "startTime": "2023-10-07T08:00:00",
+                    "endTime": "2023-10-07T10:00:00",
+                    "pricedHourly": true
+                }
+            },
+            "SelectHelperDto": {
+                "title": "Root Type for SelectHelperDto",
+                "description": "",
+                "type": "object",
+                "properties": {
+                    "helperId": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "helperId": "123e4567-e89b-12d3-a456-426614174000"
+                }
+            },
+            "ApplicationResponseDto": {
+                "title": "Root Type for ApplicationResponseDto",
+                "description": "",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "helpMissionId": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "helperId": {
+                        "type": "string"
+                    },
+                    "helperName": {
+                        "type": "string"
+                    },
+                    "whyChooseMe": {
+                        "type": "string"
+                    },
+                    "completedMissions": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "languages": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "rating": {
+                        "format": "double",
+                        "type": "number"
+                    },
+                    "category": {
+                        "type": "string"
+                    },
+                    "appliedAt": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "id": 1,
+                    "helpMissionId": 123,
+                    "helperId": "123e4567-e89b-12d3-a456-426614174000",
+                    "helperName": "Jane Doe",
+                    "whyChooseMe": "I have extensive experience in similar tasks",
+                    "completedMissions": 5,
+                    "languages": [
+                        "EN",
+                        "DE"
+                    ],
+                    "rating": 4.7,
+                    "category": "Education",
+                    "appliedAt": "2023-10-08T15:45:00Z",
+                    "status": "APPLIED"
+                }
+            },
+            "PagedApplicationResponseDto": {
+                "title": "Root Type for PagedApplicationResponseDto",
+                "description": "",
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ApplicationResponseDto"
+                        }
+                    },
+                    "totalPages": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "totalElements": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "last": {
+                        "type": "boolean"
+                    },
+                    "size": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "number": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "numberOfElements": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "first": {
+                        "type": "boolean"
+                    },
+                    "empty": {
+                        "type": "boolean"
+                    },
+                    "sort": {
+                        "type": "object",
+                        "properties": {
+                            "sorted": {
+                                "type": "boolean"
+                            },
+                            "unsorted": {
+                                "type": "boolean"
+                            },
+                            "empty": {
+                                "type": "boolean"
+                            }
+                        }
+                    }
+                },
+                "example": {
+                    "content": [],
+                    "totalPages": 20,
+                    "totalElements": 39,
+                    "last": false,
+                    "size": 34,
+                    "number": 60,
+                    "numberOfElements": 40,
+                    "first": false,
+                    "empty": false,
+                    "sort": {
+                        "sorted": false,
+                        "unsorted": true,
+                        "empty": true
+                    }
+                }
+            }
+        },
+        "responses": {
+            "PagedHelpMissionResponse": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/PagedHelpMissionType"
+                        }
+                    }
+                },
+                "description": ""
+            },
+            "ErrorResponse": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Error"
+                        }
+                    }
+                },
+                "description": ""
+            }
+        }
+    }
+}

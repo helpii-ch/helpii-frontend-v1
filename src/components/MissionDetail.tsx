@@ -9,35 +9,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Star, MapPin, Clock, Calendar, Globe, User, X } from "lucide-react";
+import {Mission} from "@/types/mission.ts";
 
 interface MissionDetailProps {
   isOpen: boolean;
   onClose: () => void;
-  mission?: {
-    id: string;
-    subject: string;
-    description: string;
-    date: string;
-    time: string;
-    location: string;
-    price: string;
-    status?:
-      | "pending"
-      | "matched"
-      | "completed"
-      | "new_match"
-      | "applied"
-      | "needer_completed"
-      | "helper_completed";
-    needer: {
-      name: string;
-      image: string;
-      rating: number;
-      age: number;
-      languages: string[];
-      location: string;
-    };
-  };
+  mission?: Mission;
   userRole: "helper" | "needer";
   onHelp?: () => void;
   onCantHelp?: () => void;

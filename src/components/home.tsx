@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Navbar from "./Navbar";
-import TutorFeed from "./TutorFeed";
-import StudentDashboard from "./StudentDashboard";
+import TutorFeed from "./HelperFeed.tsx";
+import StudentDashboard from "./NeederDashboard.tsx";
 import { useTranslation } from "react-i18next";
 
 type UserRole = "helper" | "needer";

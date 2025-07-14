@@ -1,80 +1,52 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import React, {useEffect, useRef, useState} from "react";
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Textarea} from "@/components/ui/textarea";
+import {Label} from "@/components/ui/label";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/components/ui/select";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {Calendar} from "@/components/ui/calendar";
+import {Popover, PopoverContent, PopoverTrigger,} from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/components/ui/use-toast";
-import { format } from "date-fns";
+import {Switch} from "@/components/ui/switch";
+import {useToast} from "@/components/ui/use-toast";
+import {format} from "date-fns";
 import {
-  PlusCircle,
-  Upload,
-  X,
-  BookOpen,
-  CheckCircle,
-  Star,
-  Phone,
-  Calendar as CalendarIcon,
-  Clock,
-  MapPin,
   AlertCircle,
-  Search,
-  Globe,
-  Video,
   ArrowLeft,
+  BookOpen,
+  Calendar as CalendarIcon,
+  CheckCircle,
+  Clock,
+  Globe,
+  MapPin,
+  Phone,
+  PlusCircle,
+  Search,
+  Star,
+  Upload,
+  Video,
+  X,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import MissionCard from "./MissionCard";
-import StatsCard from "./StatsCard";
+import {Badge} from "@/components/ui/badge";
 import MissionCalendar from "./MissionCalendar";
 import MissionDetail from "./MissionDetail";
+import {CreateHelpMissionDto} from "@/generated/api";
+import {TimePicker} from "@/components/ui/time-picker.tsx";
+import {missionService} from "@/api/services/MissionService.ts";
+import {Mission} from "@/types/mission.ts";
+import {ApplicationService} from "@/api/services/ApplicationService.ts";
+import {Application} from "@/types/application.ts";
 
-interface Mission {
-  id: string;
-  subject: string;
-  description: string;
-  imageUrl?: string;
-  status?: "pending" | "matched" | "completed" | "new_match" | "applied";
-  date: Date;
-  time: string;
-  location: string;
-  price: string;
-  hourly?: boolean;
-  startTime?: string;
-  endTime?: string;
-}
-
-interface MatchedHelper {
+interface HelperApplication {
   id: string;
   name: string;
   avatar: string;
@@ -85,65 +57,11 @@ interface MatchedHelper {
 
 interface NeederDashboardProps {
   missions?: Mission[];
-  matchedHelpers?: MatchedHelper[];
+  helperApplications?: HelperApplication[];
 }
 
-const StudentDashboard = ({
-  missions = [
-    {
-      id: "1",
-      subject: "Mathematics",
-      description: "Need help with calculus and linear algebra",
-      imageUrl:
-        "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&q=80",
-      status: "matched",
-      date: new Date(),
-      time: "3:00 PM - 5:00 PM",
-      location: "Online",
-      price: "25",
-      hourly: true,
-    },
-    {
-      id: "2",
-      subject: "Physics",
-      description: "Looking for assistance with mechanics and thermodynamics",
-      imageUrl:
-        "https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=800&q=80",
-      status: "pending",
-      date: new Date(Date.now() + 86400000), // Tomorrow
-      time: "4:00 PM - 6:00 PM",
-      location: "Local Library",
-      price: "30",
-      hourly: true,
-    },
-    {
-      id: "3",
-      subject: "Chemistry",
-      description: "Need help understanding organic chemistry concepts",
-      imageUrl:
-        "https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=800&q=80",
-      status: "new_match",
-      date: new Date(Date.now() + 172800000), // Day after tomorrow
-      time: "6:00 PM - 8:00 PM",
-      location: "Online",
-      price: "35",
-      hourly: true,
-    },
-    {
-      id: "4",
-      subject: "Biology",
-      description: "Need help with cellular biology and genetics",
-      imageUrl:
-        "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=800&q=80",
-      status: "completed",
-      date: new Date(Date.now() + 259200000), // 3 days from now
-      time: "5:00 PM - 6:30 PM",
-      location: "Coffee Shop",
-      price: "28",
-      hourly: true,
-    },
-  ],
-  matchedHelpers: defaultMatchedHelpers = [
+const NeederDashboard = ({
+  helperApplications: defaultHelperApplications = [
     {
       id: "1",
       name: "John Doe",
@@ -170,10 +88,11 @@ const StudentDashboard = ({
     },
   ],
 }: NeederDashboardProps) => {
+  const [missions, setMissions] = useState<Mission[]>([]);
   // Create a state to manage matched helpers
-  const [matchedHelpers, setMatchedHelpers] = useState<MatchedHelper[]>(
-    defaultMatchedHelpers,
-  );
+  const [helperApplications, setHelperApplications] = useState([]);
+  const [isLoadingApplications, setIsLoadingApplications] = useState(true);
+  const applicationService = new ApplicationService();
   const [activeTab, setActiveTab] = useState("missions");
   const [newMission, setNewMission] = useState<Partial<Mission>>({
     subject: "",
@@ -195,6 +114,7 @@ const StudentDashboard = ({
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isFormValid, setIsFormValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [newMissionId, setNewMissionId] = useState<string | null>(null);
   const { toast } = useToast();
   const [missionFilter, setMissionFilter] = useState("all");
@@ -222,6 +142,76 @@ const StudentDashboard = ({
   const [showHelperProfileModal, setShowHelperProfileModal] = useState(false);
   const [selectedHelperProfile, setSelectedHelperProfile] = useState<any>(null);
   const [acceptedHelpers, setAcceptedHelpers] = useState<string[]>([]);
+
+  const fetchMissions = async () => {
+    setIsLoading(true);
+    try {
+      const response = await missionService.getCreatedMissions();
+
+      console.log(response);
+
+      const transformedMissions: Mission[] = response.content.map(mission => ({
+        id: mission.id,
+        subject: mission.title,
+        description: mission.description,
+        location: mission.location,
+        status: mission.status.toLowerCase(),
+        price: mission.offeredPrice.toString(),
+        date: new Date(mission.startTime),
+        time: mission.startTime && mission.endTime ?
+            `${new Date(mission.startTime).toLocaleTimeString()} - ${new Date(mission.endTime).toLocaleTimeString()}` : '',
+      }));
+
+      setMissions(transformedMissions);
+
+    } catch (error) {
+      console.error('Error fetching missions: ', error);
+      toast({
+        title: "Error",
+        description: "Failed to load missions. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchApplications = async () => {
+    setIsLoadingApplications(true);
+    try {
+      const response = await applicationService.getAllApplicationsForNeeder();
+
+      const transformedApplications: Application[] = response.content.map(app => ({
+        id: app.id,
+        helpMissionId: app.helpMissionId,
+        helperId: app.helperId,
+        helperName: app.helperName,
+        whyChooseMe: app.whyChooseMe,
+        completedMissions: app.completedMissions,
+        languages: app.languages,
+        rating: app.rating,
+        category: app.category,
+        appliedAt: new Date(app.appliedAt),
+        status: app.status
+      }));
+
+      setHelperApplications(transformedApplications);
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load applications. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingApplications(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMissions();
+    fetchApplications();
+  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -408,39 +398,39 @@ const StudentDashboard = ({
       // Generate a unique ID for the new mission
       const id = (missions.length + 1).toString();
 
+
+
       // Create the complete mission object
-      const completeMission: Mission = {
-        id,
-        subject: newMission.subject || "",
+      const missionData: CreateHelpMissionDto = {
+        title: newMission.subject || "",
         description: newMission.description || "",
-        imageUrl: newMission.imageUrl,
-        status: "pending",
-        date: newMission.date || new Date(),
-        time:
-          newMission.startTime && newMission.endTime
-            ? `${newMission.startTime} - ${newMission.endTime}`
-            : "",
+        category: newMission.subject,
         location: newMission.location || "",
-        price: newMission.price || "",
-        hourly: isHourlyRate,
-        startTime: newMission.startTime,
-        endTime: newMission.endTime,
+        offeredPrice: parseFloat(newMission.price) || 0,
+        startTime: newMission.date && newMission.startTime ?
+            (() => {
+              const [hours, minutes] = newMission.startTime.split(':');
+              const date = new Date(newMission.date);
+              date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+              return date;
+            })() : undefined,
+        endTime: newMission.date && newMission.endTime ?
+            (() => {
+              const [hours, minutes] = newMission.endTime.split(':');
+              const date = new Date(newMission.date);
+              date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+              return date;
+            })() : undefined,
+        pricedHourly: isHourlyRate
       };
 
-      // In a real app, this would be an API call
-      // Simulate a network request
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const response = await missionService.createMission(missionData);
 
-      // Store the new mission ID to highlight it
-      setNewMissionId(id);
-
-      // Show success toast
       toast({
         title: "Mission Created",
-        description:
-          "Your help mission has been posted! Helpers will see it shortly.",
-        duration: 5000,
-      });
+        description: "Your help mission has been posted!",
+        duration: 5000
+      })
 
       // Reset form
       setNewMission({
@@ -448,11 +438,11 @@ const StudentDashboard = ({
         description: "",
         imageUrl: "",
         status: "pending",
-        date: new Date(Date.now() + 86400000), // Tomorrow by default
+        date: new Date(Date.now() + 86400000),
         time: "",
         location: "",
         price: "",
-        hourly: true,
+        hourly: false,
         startTime: "",
         endTime: "",
       });
@@ -488,7 +478,7 @@ const StudentDashboard = ({
 
   const handleAcceptHelper = (helperId: string, missionId: string) => {
     setSelectedHelperOffer(
-      matchedHelpers.find((t) => t.id === helperId) || null,
+      helperApplications.find((t) => t.id === helperId) || null,
     );
     setShowPaymentModal(true);
   };
@@ -498,10 +488,10 @@ const StudentDashboard = ({
     console.log(`Rejected helper ${helperId} for mission ${missionId}`);
     // Remove notification
     setNotificationCount((prev) => Math.max(0, prev - 1));
-    // Update UI by removing this helper from matchedHelpers
-    const updatedHelpers = matchedHelpers.filter((t) => t.id !== helperId);
+    // Update UI by removing this helper from helperApplications
+    const updatedHelpers = helperApplications.filter((t) => t.id !== helperId);
     // This would normally update the database
-    setMatchedHelpers(updatedHelpers);
+    setHelperApplications(updatedHelpers);
   };
 
   const handlePayment = () => {
@@ -530,8 +520,8 @@ const StudentDashboard = ({
     // Remove from new matches notification
     setNotificationCount((prev) => Math.max(0, prev - 1));
 
-    // Find the helper in matchedHelpers and update with contact info
-    const updatedMatchedHelpers = matchedHelpers.map((helper) => {
+    // Find the helper in helperApplications and update with contact info
+    const updatedHelperApplications = helperApplications.map((helper) => {
       if (helper.id === selectedHelperOffer.helperId) {
         return { ...helper, contactInfo: "+41 79 123 45 67" };
       }
@@ -539,13 +529,13 @@ const StudentDashboard = ({
     });
 
     // Remove all other helpers for the same mission
-    const filteredHelpers = updatedMatchedHelpers.filter(
+    const filteredHelpers = updatedHelperApplications.filter(
       (helper) =>
         helper.id === selectedHelperOffer.helperId ||
         helper.missionId !== missionId,
     );
 
-    setMatchedHelpers(filteredHelpers);
+    setHelperApplications(filteredHelpers);
   };
 
   // Helper function to calculate hours from time string (e.g., "3:00 PM - 5:30 PM" => 2.5)
@@ -675,7 +665,7 @@ const StudentDashboard = ({
       date: mission.date,
       time: mission.time,
       tutorName:
-        matchedHelpers.find((helper) => helper.missionId === mission.id)
+        helperApplications.find((helper) => helper.missionId === mission.id)
           ?.name || "Unknown Helper",
     }));
 
@@ -826,8 +816,8 @@ const StudentDashboard = ({
                 <div className="relative">
                   <div className="flex gap-3 overflow-x-auto horizontal-scroll pb-2">
                     {todaysMissions.map((mission) => {
-                      const matchedHelper = matchedHelpers.find(
-                        (helper) => helper.missionId === mission.id,
+                      const helperApplication = helperApplications.find(
+                        (helperApplication) => helperApplication.missionId === mission.id,
                       );
                       return (
                         <div
@@ -840,17 +830,17 @@ const StudentDashboard = ({
                           <p className="text-xs text-gray-600 mb-2">
                             {mission.time}
                           </p>
-                          {matchedHelper && (
+                          {helperApplication && (
                             <div className="flex items-center gap-2">
                               <div className="h-6 w-6 rounded-full overflow-hidden">
                                 <img
-                                  src={matchedHelper.avatar}
-                                  alt={matchedHelper.name}
+                                  src={helperApplication.avatar}
+                                  alt={helperApplication.name}
                                   className="h-full w-full object-cover"
                                 />
                               </div>
                               <span className="text-xs text-gray-700 truncate">
-                                {matchedHelper.name}
+                                {helperApplication.name}
                               </span>
                             </div>
                           )}
@@ -884,7 +874,7 @@ const StudentDashboard = ({
                             completedMissions[mission.id] ===
                               "tutor_completed") &&
                           completedMissions[mission.id] !==
-                            "student_completed" &&
+                            "needer_completed" &&
                           completedMissions[mission.id] !== "completed"
                         );
                       }).length
@@ -924,15 +914,15 @@ const StudentDashboard = ({
                             completedMissions[mission.id] ===
                               "tutor_completed") &&
                           completedMissions[mission.id] !==
-                            "student_completed" &&
+                            "needer_completed" &&
                           completedMissions[mission.id] !== "completed"
                         );
                       })
                       .map((mission) => {
-                        const matchedHelper = matchedHelpers.find(
+                        const helperApplication = helperApplications.find(
                           (helper) => helper.missionId === mission.id,
                         );
-                        const isWaitingForStudent =
+                        const isWaitingForNeeder =
                           completedMissions[mission.id] === "helper_completed";
                         return (
                           <div
@@ -946,28 +936,28 @@ const StudentDashboard = ({
                               {mission.date.toLocaleDateString()} •{" "}
                               {mission.time}
                             </p>
-                            {matchedHelper && (
+                            {helperApplication && (
                               <div className="flex items-center gap-2 mb-2">
                                 <div className="h-6 w-6 rounded-full overflow-hidden">
                                   <img
-                                    src={matchedHelper.avatar}
-                                    alt={matchedHelper.name}
+                                    src={helperApplication.avatar}
+                                    alt={helperApplication.name}
                                     className="h-full w-full object-cover"
                                   />
                                 </div>
                                 <span className="text-xs text-gray-700 truncate">
-                                  {matchedHelper.name}
+                                  {helperApplication.name}
                                 </span>
                               </div>
                             )}
                             <div className="mb-2">
                               <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
-                                {isWaitingForStudent
+                                {isWaitingForNeeder
                                   ? "Waiting for you"
                                   : "Waiting for helper"}
                               </span>
                             </div>
-                            {!isWaitingForStudent && (
+                            {!isWaitingForNeeder && (
                               <Button
                                 size="sm"
                                 className="w-full text-xs bg-[#F37221] hover:bg-[#F37221]/90 text-white"
@@ -1025,7 +1015,7 @@ const StudentDashboard = ({
                           mission.status === "completed",
                       )
                       .map((mission) => {
-                        const matchedHelper = matchedHelpers.find(
+                        const helperApplication = helperApplications.find(
                           (helper) => helper.missionId === mission.id,
                         );
                         return (
@@ -1037,16 +1027,16 @@ const StudentDashboard = ({
                               <div className="h-8 w-8 rounded-full overflow-hidden">
                                 <img
                                   src={
-                                    matchedHelper?.avatar ||
+                                    helperApplication?.avatar ||
                                     "https://api.dicebear.com/7.x/avataaars/svg?seed=helper"
                                   }
-                                  alt={matchedHelper?.name || "Helper"}
+                                  alt={helperApplication?.name || "Helper"}
                                   className="h-full w-full object-cover"
                                 />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <span className="text-sm font-medium truncate block">
-                                  {matchedHelper?.name || "Helper"}
+                                  {helperApplication?.name || "Helper"}
                                 </span>
                                 <p className="text-xs text-gray-600">
                                   {mission.date.toLocaleDateString()}
@@ -1102,203 +1092,209 @@ const StudentDashboard = ({
         </div>
 
         <TabsContent value="missions" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredMissions.length > 0 ? (
-              filteredMissions.map((mission) => (
-                <Card
-                  key={mission.id}
-                  className={`overflow-hidden relative ${newMissionId === mission.id ? "ring-2 ring-[#F37221] ring-offset-2" : ""}`}
-                >
-                  <CardHeader>
-                    <div className="flex justify-between items-center">
-                      <CardTitle>{mission.subject}</CardTitle>
-                      {mission.status && (
-                        <div
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${mission.status === "pending" ? "bg-yellow-100 text-yellow-800" : mission.status === "matched" ? "bg-blue-100 text-blue-800" : mission.status === "completed" ? "bg-green-100 text-green-800" : mission.status === "applied" ? "bg-purple-100 text-purple-800" : "bg-purple-100 text-purple-800"}`}
+          {isLoading ? (
+              <div className="flex justify-center items-center py-10">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F37221]"/>
+              </div>
+          ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredMissions.length > 0 ? (
+                    filteredMissions.map((mission) => (
+                        <Card
+                            key={mission.id}
+                            className={`overflow-hidden relative ${newMissionId === mission.id ? "ring-2 ring-[#F37221] ring-offset-2" : ""}`}
                         >
-                          {mission.status === "pending"
-                            ? "Pending"
-                            : mission.status === "matched"
-                              ? "Matched"
-                              : mission.status === "completed"
-                                ? "Completed"
-                                : mission.status === "applied"
-                                  ? "Applied"
-                                  : "New Match"}
-                        </div>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-600">
-                      {mission.description}
-                    </p>
-                    {mission.imageUrl && (
-                      <div className="mt-4 h-40 w-full overflow-hidden rounded-md">
-                        <img
-                          src={mission.imageUrl}
-                          alt={mission.subject}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <div className="mt-3 space-y-1 text-xs">
-                      <div className="flex items-center gap-1">
-                        <span className="font-medium">Date:</span>{" "}
-                        {mission.date.toLocaleDateString()}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="font-medium">Time:</span>{" "}
-                        {mission.time}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="font-medium">Location:</span>{" "}
-                        {mission.location}
-                      </div>
-                      <div className="flex justify-end">
+                          <CardHeader>
+                            <div className="flex justify-between items-center">
+                              <CardTitle>{mission.subject}</CardTitle>
+                              {mission.status && (
+                                  <div
+                                      className={`px-2 py-1 rounded-full text-xs font-medium ${mission.status === "open" ? "bg-yellow-100 text-yellow-800" : mission.status === "matched" ? "bg-blue-100 text-blue-800" : mission.status === "completed" ? "bg-green-100 text-green-800" : mission.status === "applied" ? "bg-purple-100 text-purple-800" : "bg-purple-100 text-purple-800"}`}
+                                  >
+                                    {mission.status === "open"
+                                        ? "Open"
+                                        : mission.status === "matched"
+                                            ? "Matched"
+                                            : mission.status === "completed"
+                                                ? "Completed"
+                                                : mission.status === "applied"
+                                                    ? "Applied"
+                                                    : "New Match"}
+                                  </div>
+                              )}
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm text-gray-600">
+                              {mission.description}
+                            </p>
+                            {mission.imageUrl && (
+                                <div className="mt-4 h-40 w-full overflow-hidden rounded-md">
+                                  <img
+                                      src={mission.imageUrl}
+                                      alt={mission.subject}
+                                      className="h-full w-full object-cover"
+                                  />
+                                </div>
+                            )}
+                            <div className="mt-3 space-y-1 text-xs">
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Date:</span>{" "}
+                                {mission.date.toLocaleDateString()}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Time:</span>{" "}
+                                {mission.time}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Location:</span>{" "}
+                                {mission.location}
+                              </div>
+                              <div className="flex justify-end">
                         <span className="font-semibold">
                           {formatPriceDisplay(mission)}
                         </span>
-                      </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                          <CardFooter className="flex justify-between mt-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditMission(mission)}
+                                className="border-[#F37221] text-[#F37221] hover:bg-orange-50"
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteMission(mission.id)}
+                                className="bg-gray-600 text-white hover:bg-gray-100"
+                            >
+                              Delete
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                    ))
+                ) : (
+                    <div className="col-span-full text-center py-10">
+                      <p className="text-gray-500">
+                        No missions found with the selected filter.
+                      </p>
+                      <Button
+                          variant="outline"
+                          className="mt-4"
+                          onClick={() => setActiveTab("create")}
+                      >
+                        <PlusCircle className="mr-2 h-4 w-4"/>
+                        Create New Mission
+                      </Button>
                     </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between mt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditMission(mission)}
-                      className="border-[#F37221] text-[#F37221] hover:bg-orange-50"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteMission(mission.id)}
-                      className="bg-gray-600 text-white hover:bg-gray-100"
-                    >
-                      Delete
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-10">
-                <p className="text-gray-500">
-                  No missions found with the selected filter.
-                </p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => setActiveTab("create")}
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Create New Mission
-                </Button>
+                )}
               </div>
-            )}
-          </div>
+          )}
         </TabsContent>
 
         <TabsContent value="new_matches" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {matchedHelpers.length > 0 ? (
-              matchedHelpers.map((tutor) => {
-                // Mock data for tutor profile (in a real app, this would come from the database)
-                const tutorProfile = {
-                  id: tutor.id,
-                  name: tutor.name,
-                  avatar: tutor.avatar,
-                  subject: tutor.subject,
-                  slogan:
-                    "I'm passionate about helping students understand complex concepts in simple ways.",
-                  isHelpHero: tutor.id === "1", // Just for demo purposes
-                  helpMissions: 12,
-                  languages: ["English", "Spanish", "German"],
-                  rating: 4.8,
-                  ratingDetails: {
-                    friendliness: 4.9,
-                    reliability: 4.7,
-                    skills: 4.8,
-                    efficiency: 4.6,
-                  },
-                  subjects: [tutor.subject, "Algebra", "Calculus"],
-                  location: "Bern",
-                  radius: 10,
-                  whyChooseMe:
-                    "I have 5+ years of experience teaching at university level and can break down complex topics into easy-to-understand concepts.",
-                  videoUrl: "",
-                  joinDate: "June 2023",
-                  missionsCompleted: 12,
-                  reviews: [
-                    {
-                      id: "1",
-                      studentName: "Emma S.",
-                      rating: 5,
-                      comment:
-                        "Excellent tutor! Made complex concepts easy to understand.",
+            {helperApplications.length > 0 ? (
+                helperApplications.map((tutor) => {
+                  // Mock data for tutor profile (in a real app, this would come from the database)
+                  const tutorProfile = {
+                    id: tutor.id,
+                    name: tutor.name,
+                    avatar: tutor.avatar,
+                    subject: tutor.subject,
+                    slogan:
+                        "I'm passionate about helping needers understand complex concepts in simple ways.",
+                    isHelpHero: tutor.id === "1", // Just for demo purposes
+                    helpMissions: 12,
+                    languages: ["English", "Spanish", "German"],
+                    rating: 4.8,
+                    ratingDetails: {
+                      friendliness: 4.9,
+                      reliability: 4.7,
+                      skills: 4.8,
+                      efficiency: 4.6,
                     },
-                    {
-                      id: "2",
-                      studentName: "Michael T.",
-                      rating: 4.5,
-                      comment:
-                        "Very patient and knowledgeable. Would recommend!",
-                    },
-                    {
-                      id: "3",
-                      studentName: "Sarah L.",
-                      rating: 5,
-                      comment: "Helped me pass my exam with flying colors!",
-                    },
-                  ],
-                };
+                    subjects: [tutor.subject, "Algebra", "Calculus"],
+                    location: "Bern",
+                    radius: 10,
+                    whyChooseMe:
+                        "I have 5+ years of experience teaching at university level and can break down complex topics into easy-to-understand concepts.",
+                    videoUrl: "",
+                    joinDate: "June 2023",
+                    missionsCompleted: 12,
+                    reviews: [
+                      {
+                        id: "1",
+                        neederName: "Emma S.",
+                        rating: 5,
+                        comment:
+                            "Excellent tutor! Made complex concepts easy to understand.",
+                      },
+                      {
+                        id: "2",
+                        neederName: "Michael T.",
+                        rating: 4.5,
+                        comment:
+                            "Very patient and knowledgeable. Would recommend!",
+                      },
+                      {
+                        id: "3",
+                        neederName: "Sarah L.",
+                        rating: 5,
+                        comment: "Helped me pass my exam with flying colors!",
+                      },
+                    ],
+                  };
 
-                return (
-                  <Card
-                    key={tutor.id}
-                    className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={(e) => {
-                      // Only open modal if not clicking on buttons
-                      if (!(e.target as HTMLElement).closest("button")) {
-                        setSelectedHelperProfile(tutorProfile);
-                        setShowHelperProfileModal(true);
-                      }
-                    }}
-                  >
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start space-x-4">
-                        <div className="h-16 w-16 rounded-full overflow-hidden">
-                          <img
-                            src={tutor.avatar}
-                            alt={tutor.name}
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-xl">
-                              {tutor.name}
-                            </CardTitle>
-                            {tutorProfile.isHelpHero && (
-                              <Badge className="bg-gradient-to-r from-amber-400 to-amber-600 text-white">
-                                Help Hero
-                              </Badge>
-                            )}
+                  return (
+                      <Card
+                          key={tutor.id}
+                          className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                          onClick={(e) => {
+                            // Only open modal if not clicking on buttons
+                            if (!(e.target as HTMLElement).closest("button")) {
+                              setSelectedHelperProfile(tutorProfile);
+                              setShowHelperProfileModal(true);
+                            }
+                          }}
+                      >
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start space-x-4">
+                            <div className="h-16 w-16 rounded-full overflow-hidden">
+                              <img
+                                  src={tutor.avatar}
+                                  alt={tutor.name}
+                                  className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <CardTitle className="text-xl">
+                                  {tutor.name}
+                                </CardTitle>
+                                {tutorProfile.isHelpHero && (
+                                    <Badge className="bg-gradient-to-r from-amber-400 to-amber-600 text-white">
+                                      Help Hero
+                                    </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                                {tutorProfile.slogan}
+                              </p>
+                            </div>
                           </div>
-                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                            {tutorProfile.slogan}
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm font-medium mb-2">
+                            Matched with your{" "}
+                            <span className="text-[#F37221]">{tutor.subject}</span>{" "}
+                            mission
                           </p>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm font-medium mb-2">
-                        Matched with your{" "}
-                        <span className="text-[#F37221]">{tutor.subject}</span>{" "}
-                        mission
-                      </p>
-                      <div className="text-xs space-y-2">
+                          <div className="text-xs space-y-2">
                         <div className="flex items-center gap-1">
                           <span className="font-medium">Help Missions:</span>{" "}
                           {tutorProfile.helpMissions}
@@ -1380,7 +1376,7 @@ const StudentDashboard = ({
                 .filter((m) => m.status === "matched")
                 .map((mission) => {
                   // Find the matched helper for this mission
-                  const matchedHelper = matchedHelpers.find(
+                  const helperApplication = helperApplications.find(
                     (helper) =>
                       helper.missionId === mission.id &&
                       acceptedHelpers.includes(helper.id),
@@ -1397,18 +1393,18 @@ const StudentDashboard = ({
                         </div>
                       </CardHeader>
                       <CardContent>
-                        {matchedHelper && (
+                        {helperApplication && (
                           <div className="flex items-center space-x-3 mb-3 pb-3 border-b border-gray-100">
                             <div className="h-12 w-12 rounded-full overflow-hidden">
                               <img
-                                src={matchedHelper.avatar}
-                                alt={matchedHelper.name}
+                                src={helperApplication.avatar}
+                                alt={helperApplication.name}
                                 className="h-full w-full object-cover"
                               />
                             </div>
                             <div>
                               <p className="font-medium">
-                                {matchedHelper.name}
+                                {helperApplication.name}
                               </p>
                               <p className="text-xs text-gray-500">
                                 Your matched helper
@@ -1449,10 +1445,10 @@ const StudentDashboard = ({
                         </div>
                       </CardContent>
                       <CardFooter className="flex justify-between mt-2">
-                        {matchedHelper && matchedHelper.contactInfo ? (
+                        {helperApplication && helperApplication.contactInfo ? (
                           <Button className="w-full bg-[#F37221] hover:bg-[#F37221]/90 text-white">
                             <Phone className="h-4 w-4 mr-2" /> Contact Helper:{" "}
-                            {matchedHelper.contactInfo}
+                            {helperApplication.contactInfo}
                           </Button>
                         ) : (
                           <p className="text-sm text-gray-600">
@@ -1684,7 +1680,7 @@ const StudentDashboard = ({
         <TabsContent value="calendar">
           <MissionCalendar
             missions={calendarMissions}
-            userRole="student"
+            userRole="needer"
             onMissionClick={handleCalendarMissionClick}
           />
         </TabsContent>
@@ -1936,7 +1932,7 @@ const StudentDashboard = ({
                     <div className="flex justify-between items-center">
                       <Label htmlFor="date">Date & Time</Label>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                       <div className="md:col-span-1">
                         <Label htmlFor="date" className="text-xs mb-1 block">
                           Date
@@ -1980,71 +1976,44 @@ const StudentDashboard = ({
                       <div className="md:col-span-2">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div>
-                            <Label
-                              htmlFor="startTime"
-                              className="text-xs mb-1 block"
-                            >
-                              Start Time
-                            </Label>
-                            <div className="flex">
-                              <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                                <Clock className="h-4 w-4" />
-                              </span>
-                              <Input
-                                id="startTime"
-                                name="startTime"
-                                placeholder="e.g. 3:00 PM"
+                            <TimePicker
+                                label="Start Time"
                                 value={newMission.startTime}
-                                onChange={handleInputChange}
-                                className={`rounded-l-none ${formErrors.startTime ? "border-red-500" : ""}`}
-                              />
-                            </div>
-                            {formErrors.startTime && (
-                              <div className="text-red-500 text-xs flex items-center gap-1 mt-1">
-                                <AlertCircle className="h-3 w-3" />
-                                {formErrors.startTime}
-                              </div>
-                            )}
+                                onChange={(time) => {
+                                  setNewMission((prev) => ({
+                                    ...prev,
+                                    startTime: time
+                                  }));
+                                }}
+                                required
+                                error={formErrors.startTime}
+                            />
                           </div>
                           <div>
-                            <Label
-                              htmlFor="endTime"
-                              className="text-xs mb-1 block"
-                            >
-                              End Time
-                            </Label>
-                            <div className="flex">
-                              <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                                <Clock className="h-4 w-4" />
-                              </span>
-                              <Input
-                                id="endTime"
-                                name="endTime"
-                                placeholder="e.g. 5:00 PM"
+                            <TimePicker
+                                label="End Time"
                                 value={newMission.endTime}
-                                onChange={handleInputChange}
-                                className={`rounded-l-none ${formErrors.endTime ? "border-red-500" : ""}`}
-                              />
-                            </div>
-                            {formErrors.endTime && (
-                              <div className="text-red-500 text-xs flex items-center gap-1 mt-1">
-                                <AlertCircle className="h-3 w-3" />
-                                {formErrors.endTime}
-                              </div>
-                            )}
+                                onChange={(time) => {
+                                  setNewMission((prev) => ({
+                                    ...prev,
+                                    endTime: time
+                                  }));
+                                }}
+                                error={formErrors.endTime}
+                            />
                           </div>
                         </div>
                         {formErrors.timeRange && (
-                          <div className="text-red-500 text-xs flex items-center gap-1 mt-1">
-                            <AlertCircle className="h-3 w-3" />
-                            {formErrors.timeRange}
-                          </div>
+                            <div className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                              <AlertCircle className="h-3 w-3"/>
+                              {formErrors.timeRange}
+                            </div>
                         )}
                         {isHourlyRate &&
-                          newMission.startTime &&
-                          newMission.endTime && (
-                            <div className="text-xs text-blue-600 flex items-center gap-1 mt-1">
-                              <Clock className="h-3 w-3" />
+                            newMission.startTime &&
+                            newMission.endTime && (
+                                <div className="text-xs text-blue-600 flex items-center gap-1 mt-1">
+                                  <Clock className="h-3 w-3" />
                               Duration:{" "}
                               {calculateDuration(
                                 newMission.startTime,
@@ -2428,7 +2397,7 @@ const StudentDashboard = ({
                       setSelectedHelperOffer({
                         helperId: selectedHelperProfile.id,
                         missionId:
-                          matchedHelpers.find(
+                          helperApplications.find(
                             (t) => t.id === selectedHelperProfile.id,
                           )?.missionId || "",
                         helperName: selectedHelperProfile.name,
@@ -2458,4 +2427,4 @@ const StudentDashboard = ({
   );
 };
 
-export default StudentDashboard;
+export default NeederDashboard;
