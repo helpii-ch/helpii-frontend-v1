@@ -804,22 +804,17 @@ const HelperProfile = ({ activeRole, onTabChange }: HelperProfileProps) => {
             </div>
 
             {/* Privacy Information */}
-            <div className="mt-6 p-3 bg-gray-50 border border-gray-200 rounded-md">
-              <div className="flex items-start gap-2">
-                <Shield className="h-4 w-4 text-gray-500 mt-0.5" />
-                <div>
-                  <h3 className="font-medium text-gray-700 text-sm mb-1">
-                    Privacy Information
-                  </h3>
-                  <p className="text-xs text-gray-600">
-                    Your contact information (phone number) will only be shared
-                    with needers after they have completed the payment for the
-                    help mission. Your birthdate is used for age verification
-                    and will not be shared with needers (only your age will be
-                    shared with needers).
-                  </p>
-                </div>
-              </div>
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mt-8">
+              <h4 className="text-sm font-medium text-blue-800 mb-1">
+                Privacy Information
+              </h4>
+              <p className="text-xs text-blue-700">
+                Your contact information (phone number) will only be shared with
+                needers after they have completed the payment for the help
+                mission. Your birthdate is used for age verification and will
+                not be shared with needers (only your age will be shared with
+                needers).
+              </p>
             </div>
           </div>
         </div>

@@ -71,15 +71,20 @@ const Navbar = ({
       className={`bg-white shadow-sm py-4 px-6 sticky top-0 z-50 border-b-2 ${activeRole === "helper" ? "border-[#5E17EB]" : "border-[#F37221]"}`}
     >
       <div className="container mx-auto flex justify-between items-center">
-        {/* Logo */}
+                {/* Logo */}
         <div className="flex items-center">
           <button
             onClick={() => onTabChange("missions")}
-            className={`text-2xl font-bold ${roleColorClass} hover:opacity-80 transition-opacity cursor-pointer`}
+            className="hover:opacity-80 transition-opacity cursor-pointer"
           >
-            helpii
+            <img
+              src="/public/Logo_d.svg"
+              alt="Helpii Logo"
+              className="h-8 w-auto"
+            />
           </button>
         </div>
+
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
